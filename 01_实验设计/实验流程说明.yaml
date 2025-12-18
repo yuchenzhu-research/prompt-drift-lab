@@ -1,0 +1,21 @@
+experiment_name: Prompt Drift Lab
+goal: Measure prompt-induced output drift under small phrasing changes
+
+model: ChatGPT-5.2 extended thinking
+interface: web_ui
+temperature: platform_default_uncontrolled
+
+prompt_versions:
+  prompt1: 原始提示词（宽松、语义导向）
+  prompt2: 修改后提示词（三段式、强结构约束）
+
+evaluation:
+  task_set: eval/eval_set.v1.jsonl
+  output_template: eval/output_template.md
+  rubric: rubric/rubric_v0.2.md
+  focus: format_adherence
+
+notes:
+  - 不比较知识对错
+  - 不使用 gold answer
+  - 仅分析结构漂移与指令遵循率
