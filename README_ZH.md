@@ -1,74 +1,101 @@
 # Prompt Drift Lab
-**大语言模型结构化提示词稳定性评测与归因实验（Prompt Drift）**
+*面向可复现的提示词漂移（prompt drift）评测框架：用受控提示词变体检验 LLM 的指令遵循稳定性。*
 
-> 双语仓库约定：
-> - **不带** `_ZH` 的文件为**英文版**
-> - **带** `_ZH` 的文件为**中文版**
->
-> 关于 PDF（重要说明）：
-> - `07_deep_research/` 下的 PDF **多数为中文**，英语母语读者可能无法直接阅读。
-> - 我保留它们是为了**引用、可追溯与实验记录**（并非“必须阅读材料”）。
-
-- English entry: [`README.md`](README.md)
+> 语言约定：`README.md` 为英文主入口；中文版本在 `README_ZH.md`。
 
 ---
 
 ## 0) 30 秒导航
 
-1. **实验设计** → `01_experiment_design/README_ZH.md`
-2. **生成侧提示词与变体** → `02_prompt_variants/README_ZH.md`
-3. **评测规则（协议 + judge 契约）** → `03_evaluation_rules/README_ZH.md`
-4. **结果工件与表格** → `04_results/README_ZH.md`
-5. **解释层 + 边界声明（不引入新实验）** → `05_summary_and_outlook/README_ZH.md`
+1) **评测对象（题集 / schema / 协议）** → `01_experiment_design/README_ZH.md`
+
+2) **生成侧提示词（A/B/… 变体清单）** → `02_prompt_variants/PROMPT_MANIFEST_ZH.md`
+
+3) **评测规则（rubric + judge 契约）** → `03_evaluation_rules/EVAL_PROTOCOL_ZH.md` + `03_evaluation_rules/JUDGE_PROMPT_ZH.md`
+
+4) **结果与快照位置（可审计）** → `04_results/README_ZH.md`
+
+5) **解释层（结论边界 + 展望）** → `05_summary_and_outlook/README_ZH.md`
 
 ---
 
-## 1) 目录分工（按文件夹）
+## 1) 这个仓库“是什么 / 不是什么”
 
-- `01_experiment_design/`  
-  题集（`eval_questions_*.jsonl`）、实验协议（`experiment_protocol*.yaml`）、输出 schema、术语对齐。
+### 是
 
-- `02_prompt_variants/`  
-  **生成侧** prompt 与受控变体（A/B/…）；manifest 用于映射 `prompt_id/prompt_version -> 文件`.
+- 以工件为中心的评测闭环：检验**提示词微小变化**下的**指令遵循稳定性**。
+- 强证据链：任何总结/解读都应可回指到 `04_results/` 的工件与 `03_evaluation_rules/` 的协议。
 
-- `03_evaluation_rules/`  
-  **评测侧**契约：评测协议、有效性判定、评分维度、输出 schema。
-  - 关键入口：`EVAL_PROTOCOL_ZH.md`, `JUDGE_PROMPT_ZH.md`
+### 不是
 
-- `04_results/`  
-  原始输出、评测 JSON/CSV、汇总表与分析笔记（“证据层”）。
-
-- `05_summary_and_outlook/`  
-  **解释层**：结果总结、方法启示、明确 non-claims、未来工作方向  
-  （必须可追溯到 `04_results/` 与 `03_evaluation_rules/`）。
-
-- `06_methodological_addenda_and_controls/`  
-  方法补充、对照与 rationale：解释“为什么这样设计”，但不夸大结论。
-
-- `07_deep_research/`  
-  文献笔记与 PDF（常为中文），用于**引用/记录**。
+- 给模型“综合排名”的通用基准。
+- 超出仓库内题集范围的泛化结论。
 
 ---
 
-## 2) 结论边界（务必遵守）
+## 2) 目录结构（当前）
 
-- 本仓库是 **artifact-first**：提示词、协议、输出、打分与表格都显式保存。
-- 任何解释性文字都应能**追溯**到：
-  - `04_results/` 的结果工件，以及
-  - `03_evaluation_rules/` 的评测规则。
-- 不应把本仓库当作“可广泛泛化”的 benchmark 来做超出记录设置的主张。
+```
+01_experiment_design/
+  README.md / README_ZH.md
+  eval_questions_EN.jsonl / eval_questions_ZH.jsonl
+  output_schema.md / output_schema_ZH.md
+  experiment_protocol.yaml / experiment_protocol_ZH.yaml
+  terminology_alignment.md / terminology_alignment_ZH.md
+  threats_and_limitations.md / threats_and_limitations_ZH.md
+
+02_prompt_variants/
+  README.md / README_ZH.md
+  PROMPT_MANIFEST.md / PROMPT_MANIFEST_ZH.md
+  00_baseline_prompt_A*.txt
+  01_structured_prompt_B*.txt
+  02_conflict_prompt*.txt
+  (可选额外变体：03_long_prompt*, 04_weak_prompt*, ...)
+
+03_evaluation_rules/
+  README.md / README_ZH.md
+  EVAL_PROTOCOL.md / EVAL_PROTOCOL_ZH.md
+  JUDGE_PROMPT.md / JUDGE_PROMPT_ZH.md
+  (辅助：validity_criteria*, scoring_dimensions*, compute_scores*.py, schema/)
+
+04_results/
+  README.md / README_ZH.md
+  01_raw_model_outputs/                 # PDF：原始输出（按模型/题目/变体）
+  02_cross_model_evaluation/
+    valid_evaluations/
+      main_method_cross_model/          # JSON：跨模型评测（主证据）
+      supporting_method_self_eval/      # JSON：自评（支持性 sanity check）
+      summary_tables/                   # CSV：用于分析的聚合表
+    invalid_evaluations/                # 统计排除；保留用于审计/失败模式池
+  03_results_analysis.md / 03_results_analysis_ZH.md
+
+05_summary_and_outlook/
+  README.md / README_ZH.md
+
+06_methodological_addenda_and_controls/
+  README.md / README_ZH.md
+  A_B_comparative_rationale.md / A_B_comparative_rationale_ZH.md
+
+07_deep_research/
+  README.md（建议：补一个 README_ZH.md 以保持双语一致）
+  *.pdf（文献/背景资料）
+```
 
 ---
 
-## 3) 最小复现方式
+## 3) 最安全的结论边界（建议）
 
-- 基于已有评测输出进行重算/汇总：
-  - 见 `03_evaluation_rules/compute_scores.py`
-- 若要完整复跑（重新生成模型输出），需要外部模型调用权限；本仓库不保证一键跑通整条生成链路。
+建议所有表述都写成：
+
+- “在 **本题集** + **本提示词变体** + **本评测协议** 下，我们观察到 …”
+
+避免：
+
+- 扩展成跨任务/跨域的“总体模型能力”判断。
 
 ---
 
-## 4) 命名约定
+## 4) 可复现性备注
 
-- `_ZH` 后缀 = 中文对应版本
-- 用稳定 id（`question_id/prompt_id/prompt_version`）保证可审计与可对齐
+- `03_evaluation_rules/` 是评测口径的权威来源。
+- 结果目录可保存当次使用的协议/清单快照（`used_evaluation_protocol*.md`、`used_prompt_manifest*.md`），用于审计与复跑。

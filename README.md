@@ -1,74 +1,103 @@
+# README.md (EN)
+
 # Prompt Drift Lab
-**A reproducible evaluation scaffold for instruction-following stability under prompt perturbations (prompt drift).**
+*A reproducible, artifact-first evaluation framework for instruction-following stability (prompt drift) under controlled prompt variants.*
 
-> Bilingual repo policy:
-> - Files **without** `_ZH` are the **English** version.
-> - Files **with** `_ZH` are the **Chinese** version.
->
-> Note on PDFs:
-> - Many PDFs under `07_deep_research/` are **Chinese-only**. English native readers may not be able to read them.
-> - They are kept here **for citation, traceability, and experiment record-keeping** (not as “required reading”).
-
-- 中文版入口：[`README_ZH.md`](README_ZH.md)
+> Language: **README.md is English-first**. A Chinese counterpart is provided as `README_ZH.md`.
 
 ---
 
 ## 0) 30-second start
 
-1. **Experiment design** → `01_experiment_design/README.md`
-2. **Generator prompts & variants** → `02_prompt_variants/README.md`
-3. **Evaluation rules (protocol + judge contract)** → `03_evaluation_rules/README.md`
-4. **Results artifacts & tables** → `04_results/README.md`
-5. **Interpretation + boundaries (no new experiments)** → `05_summary_and_outlook/README.md`
+1) **What was evaluated (questions / schema / protocol)?** → `01_experiment_design/README.md`
+
+2) **What prompts were used (generator-side A/B/…)?** → `02_prompt_variants/PROMPT_MANIFEST.md`
+
+3) **How scoring/judging works (rubric + judge contract)?** → `03_evaluation_rules/EVAL_PROTOCOL.md` + `03_evaluation_rules/JUDGE_PROMPT.md`
+
+4) **Where are the results and the exact snapshots used?** → `04_results/README.md`
+
+5) **So what (interpretation + claim boundary + outlook)?** → `05_summary_and_outlook/README.md`
 
 ---
 
-## 1) What this repo contains (by folder)
+## 1) What this repo is (and what it is not)
 
-- `01_experiment_design/`  
-  Questions (`eval_questions_*.jsonl`), experiment protocol (`experiment_protocol*.yaml`), output schema, and terminology alignment.
+### This repo **is**
 
-- `02_prompt_variants/`  
-  **Generator-side** prompts + controlled variants (A/B/…); manifest files mapping `prompt_id/prompt_version -> file`.
+- An **artifact-centered** eval pipeline to test **instruction-following stability** when prompt wording/format constraints change.
+- A **traceable evidence chain**: every claim in summaries should be traceable to `04_results/` artifacts and `03_evaluation_rules/` protocols.
 
-- `03_evaluation_rules/`  
-  **Judge-side** contract: protocol, validity criteria, scoring dimensions, and schema.
-  - Key entrypoints: `EVAL_PROTOCOL.md`, `JUDGE_PROMPT.md`
+### This repo **is not**
 
-- `04_results/`  
-  Raw outputs, judged JSON/CSV tables, and analysis notes. This is the “evidence layer”.
-
-- `05_summary_and_outlook/`  
-  The **interpretive layer**: result-level summaries, implications, explicit non-claims, and future work ideas  
-  (must remain traceable to `04_results/` and `03_evaluation_rules/`).
-
-- `06_methodological_addenda_and_controls/`  
-  Rationale, controls, and methodological notes that explain *why this setup* (without overstating claims).
-
-- `07_deep_research/`  
-  Literature notes and PDFs (often Chinese-only) kept for **citation/record**.
+- A benchmark claiming global model rankings.
+- A dataset release beyond the included small evaluation set.
 
 ---
 
-## 2) Claim boundary (important)
+## 2) Directory map (current)
 
-- This repo is **artifact-first**: prompts, protocol, outputs, scoring, and tables are explicit.
-- Any interpretation should be **traceable** to:
-  - results in `04_results/`, and
-  - rules in `03_evaluation_rules/`.
-- Do **not** treat this repo as a benchmark with broad generalization claims beyond the recorded setup.
+```
+01_experiment_design/
+  README.md / README_ZH.md
+  eval_questions_EN.jsonl / eval_questions_ZH.jsonl
+  output_schema.md / output_schema_ZH.md
+  experiment_protocol.yaml / experiment_protocol_ZH.yaml
+  terminology_alignment.md / terminology_alignment_ZH.md
+  threats_and_limitations.md / threats_and_limitations_ZH.md
+
+02_prompt_variants/
+  README.md / README_ZH.md
+  PROMPT_MANIFEST.md / PROMPT_MANIFEST_ZH.md
+  00_baseline_prompt_A*.txt
+  01_structured_prompt_B*.txt
+  02_conflict_prompt*.txt
+  (optional additional variants: 03_long_prompt*, 04_weak_prompt*, ...)
+
+03_evaluation_rules/
+  README.md / README_ZH.md
+  EVAL_PROTOCOL.md / EVAL_PROTOCOL_ZH.md
+  JUDGE_PROMPT.md / JUDGE_PROMPT_ZH.md
+  (supporting docs: validity_criteria*, scoring_dimensions*, compute_scores*.py, schema/)
+
+04_results/
+  README.md / README_ZH.md
+  01_raw_model_outputs/                 # PDFs: raw outputs (per model / per question / per variant)
+  02_cross_model_evaluation/
+    valid_evaluations/
+      main_method_cross_model/          # JSON: cross-model judging (main evidence)
+      supporting_method_self_eval/      # JSON: self-eval (supporting sanity check)
+      summary_tables/                   # CSV: aggregations used in analysis
+    invalid_evaluations/                # excluded from stats; kept for audit/failure-mode pool
+  03_results_analysis.md / 03_results_analysis_ZH.md
+
+05_summary_and_outlook/
+  README.md / README_ZH.md
+
+06_methodological_addenda_and_controls/
+  README.md / README_ZH.md
+  A_B_comparative_rationale.md / A_B_comparative_rationale_ZH.md
+
+07_deep_research/
+  README.md (recommended: add README_ZH.md if you want bilingual)
+  *.pdf (reading notes / background)
+```
 
 ---
 
-## 3) Quick reproducibility
+## 3) Safest claim boundary (recommended)
 
-- Re-score / re-aggregate from existing judged outputs:
-  - see `03_evaluation_rules/compute_scores.py`
-- Full re-run (re-generating model outputs) requires external model access and is not bundled as a single turnkey script in this repo.
+To keep the repo **workshop-safe and review-safe**, prefer claims of the form:
+
+- “Under **this** question set + **these** prompt variants + **this** scoring protocol, we observe …”
+
+Avoid:
+
+- Broad generalization across tasks, domains, or “overall model quality”.
 
 ---
 
-## 4) Naming conventions
+## 4) Reproducibility notes
 
-- `_ZH` suffix = Chinese counterpart file.
-- Prefer stable ids (`question_id`, `prompt_id`, `prompt_version`) to keep runs auditable.
+- The canonical evaluation contract lives in `03_evaluation_rules/`.
+- Results directories may snapshot the exact protocol/manifest used (e.g., `used_evaluation_protocol*.md`, `used_prompt_manifest*.md`) to keep runs auditable.
