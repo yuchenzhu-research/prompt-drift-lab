@@ -1,78 +1,59 @@
-# 03 Evaluation Rules (Index)
+# 03 Evaluation Rules
 
-**You are here:** `03_evaluation_rules/README.md`  
-**Upstream:** `01_experiment_design/` → `02_prompt_variants/`  
-**Downstream:** `04_results/` (evidence) → `05_summary_and_outlook/` (claims)  
-**Sidecar:** `06_methodological_addenda_and_controls/` (controls & rationale)
+This folder defines the **evaluation-side contract** of the project:
+- what counts as valid / invalid output
+- how scoring dimensions are defined and applied
+- what the judge must output (machine-aggregatable JSON)
 
-## Purpose
-This folder defines **how evaluation is performed** on existing artifacts (no re-generation):
-- what counts as **valid/invalid** evaluation output,
-- what the **scoring dimensions** mean,
-- what the **judge prompt** is,
-- how we **aggregate** judge JSON into CSV tables.
-
-> This README is an **index + boundary contract** (who owns what).  
-> It does **not** interpret results. For interpretation and attribution, see: `04_results/03_results_analysis.md`.
+> **Single source of truth (EN):** `03_evaluation_rules/EVAL_PROTOCOL.md`  
+> If any file conflicts with the protocol, **the protocol wins**.
 
 ---
 
-## Language policy (project-wide)
-- Files **without** `_ZH` are **English**.
-- Files with `_ZH` are **Chinese**.
-- Note: the collected artifacts and many PDFs are **Chinese**, so English readers may not be able to read raw content directly.
+## 0) 30-second start
+
+- Want to understand / change evaluation rules?  
+  → Read / edit: `EVAL_PROTOCOL.md`
+
+- Want to see how the judge is instructed (I/O + constraints)?  
+  → Read: `JUDGE_PROMPT.md`
+
+- Want dimension explanations (not rules)?  
+  → Read: `02_scoring_dimensions.md`
+
+- Want validity criteria explanation?  
+  → Read: `01_validity_criteria.md`
+
+- Want to compute summary scores from judged JSON?  
+  → Run: `compute_scores.py`
 
 ---
 
-## Source-of-truth and division of labor (do not mix responsibilities)
+## 1) File responsibilities (do not mix roles)
 
-### 1) Protocol (process + constraints)
-- `EVAL_PROTOCOL.md` / `EVAL_PROTOCOL_ZH.md`  
-  Owns: evaluation scope, A/B-blind constraint, allowed metadata keys, what must be traceable.
+### Authoritative protocol (only place to change rules)
+- `EVAL_PROTOCOL.md` — **authoritative evaluation specification (EN)**
+- `EVAL_PROTOCOL_ZH.md` — authoritative evaluation specification (ZH)
 
-### 2) Bundle contract & operational rules (what the scripts actually consume)
-- `00_evaluation_protocol*.md`  
-  Owns: bundle unit (e.g., 16 PDFs), file naming expectations, invalid conditions checklist.
+### Explanations (must not override the protocol)
+- `01_validity_criteria.md` / `01_validity_criteria_ZH.md` — explain validity gates
+- `02_scoring_dimensions.md` / `02_scoring_dimensions_ZH.md` — explain scoring dimensions
 
-> ⚠️ Naming note: in the current repo, two filenames may contain a trailing space:
-> `00_evaluation_protocol.md ` and `01_validity_criteria.md `. Fix them with `git mv` to avoid broken references.
+### Judge I/O contract (must follow the protocol)
+- `JUDGE_PROMPT.md` / `JUDGE_PROMPT_ZH.md` — A/B-blind, rubric-only, JSON-only output contract
 
-### 3) Validity (binary screening)
-- `01_validity_criteria.md` / `01_validity_criteria_ZH.md`  
-  Owns: hard fail / strict pass boundaries and invalid flags.
+### Aggregation (mechanical, no new rules)
+- `compute_scores.py` / `compute_scores_ZH.py` — compute aggregated tables from judged outputs
 
-### 4) Scoring dimensions (A–E meaning)
-- `02_scoring_dimensions.md` / `02_scoring_dimensions_ZH.md`  
-  Owns: dimension intent, bands, common failure patterns, and the “structure-first” rule.
+### Optional / legacy notes
+- `00_evaluation_protocol.md` / `00_evaluation_protocol_ZH.md` — background notes (if present).  
+  Treat as explanatory; they must not contradict `EVAL_PROTOCOL(.md|_ZH).md`.
 
-### 5) Judge prompt (exact text used for judging)
-- `JUDGE_PROMPT.md` / `JUDGE_PROMPT_ZH.md`  
-  Owns: the fixed judge prompt text and strict JSON-only output requirement.
-  If conflict exists, **protocol docs take precedence**.
-
-### 6) Aggregation (no re-judging)
-- `compute_scores.py` / `compute_scores_ZH.py`  
-  Owns: validation checks + aggregation into CSV. Does **not** assign scores.
-
-### 7) Schema (optional)
-- `schema/`  
-  Optional machine schema(s). Current aggregation primarily relies on `compute_scores.py` checks.
+### Schema (if used)
+- `schema/` — JSON schema and/or related structured specs.
 
 ---
 
-## Where judged JSON and CSV tables live (results folder pointers)
-This folder defines rules; the **outputs** are stored under:
-- Valid evaluations:
-  - `04_results/02_cross_model_evaluation/valid_evaluations/main_method_cross_model/`
-  - `04_results/02_cross_model_evaluation/valid_evaluations/supporting_method_self_eval/`
-- Invalid evaluations:
-  - `04_results/02_cross_model_evaluation/invalid_evaluations/`
-- Aggregated tables:
-  - `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/`
-
----
-
-## Non-goals (to prevent README overlap)
-- Do not put result interpretation here → use `04_results/03_results_analysis.md`.
-- Do not restate experiment design here → use `01_experiment_design/README.md`.
-- Do not justify “why Prompt B” here → use `06_methodological_addenda_and_controls/README.md`.
+## 2) Where results live
+This folder is rules & scoring logic only. Results and artifacts live in:
+- `04_results/` (raw outputs, judged JSON, and CSV summaries)

@@ -1,65 +1,85 @@
-# 04 实验结果（索引入口）
+# 04_results/README_ZH.md (ZH)
 
-**You are here：** `04_results/README_ZH.md`  
-**Upstream：** `01_experiment_design/` → `02_prompt_variants/` → `03_evaluation_rules/`  
-**Downstream：** `05_summary_and_outlook/`  
-**Sidecar：** `06_methodological_addenda_and_controls/`（控制实验/方法选择）
+# 04 实验结果
 
-## 本目录职责
-本目录存放所有**可复核的证据产物**：
-- 汇总表（CSV）
-- 评测 bundle（JSON）
+本目录存放一次评测流水线产出的**全部结果工件**：
 - 原始模型输出（PDF）
-- valid / invalid 分桶（便于审计）
+- 评测输出（JSON）
+- 汇总表（CSV）
+- 简要结果分析（markdown）
 
-> 本 README 只做**索引**（文件在哪里）。  
-> 结果解释、失败模式与归因逻辑请看：`04_results/03_results_analysis_ZH.md`。
-
----
-
-## 30 秒入口：数字在哪里
-
-### 1) 主汇总表（从这里开始）
-- **全局汇总表：**  
-  `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/summary.csv`
-
-### 2) 切片表（按模型/题目/版本拆分）
-- `.../summary_tables/main_method_by_*.csv`
-- `.../summary_tables/supporting_method_by_*.csv`
-- `.../summary_tables/main_method_inter_judge_agreement.csv`
+如果你要看**解释与归因**（A/B 选择依据、漂移机制、失败模式），请读：
+- `04_results/03_results_analysis_ZH.md`
+- 方法学补充与对照：`06_methodological_addenda_and_controls/`
 
 ---
 
-## 证据文件分别放在哪
+## 0) 30 秒导航（从这里开始）
 
-### A) 原始模型输出（生成产物）
-- `04_results/01_raw_model_outputs/`  
-  （按 generator 模型分组的 PDF）
+1) **总览汇总（CSV）**
+- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/summary.csv`
 
-### B) 有效评测（进入统计汇总）
-- **主方法（跨模型互评）：**  
-  `04_results/02_cross_model_evaluation/valid_evaluations/main_method_cross_model/`
-- **辅助方法（自评；仅 sanity-check）：**  
-  `04_results/02_cross_model_evaluation/valid_evaluations/supporting_method_self_eval/`
+2) **分组统计（CSV）**
+- 主方法（跨模型互评）：
+  - `.../summary_tables/main_method_by_generator.csv`
+  - `.../summary_tables/main_method_by_version.csv`
+  - `.../summary_tables/main_method_by_question.csv`
+  - `.../summary_tables/main_method_by_question_version.csv`
+  - `.../summary_tables/main_method_inter_judge_agreement.csv`
+- 辅助方法（自评 sanity check）：
+  - `.../summary_tables/supporting_method_by_generator.csv`
+  - `.../summary_tables/supporting_method_by_version.csv`
+  - `.../summary_tables/supporting_method_by_question.csv`
+  - `.../summary_tables/supporting_method_by_question_version.csv`
 
-### C) 无效评测（不进统计；用于诊断）
-- `04_results/02_cross_model_evaluation/invalid_evaluations/`
-  - `invalid_evaluations/README.md`（invalid 判定与 flags 说明）
-  - `invalid_evaluations/used_evaluation_protocol_ZH.md`（协议快照）
-  - `invalid_evaluations/used_prompt_manifest_ZH.md`（提示词快照）
-  - `invalid_evaluations/main_method_cross_model/`
-  - `invalid_evaluations/supporting_method_self_eval/`
+3) **评测输出（JSON）**
+- 有效（进入统计）：
+  - 主方法：`04_results/02_cross_model_evaluation/valid_evaluations/main_method_cross_model/`
+  - 辅助方法：`04_results/02_cross_model_evaluation/valid_evaluations/supporting_method_self_eval/`
+- 无效（不进统计；用于审计/失败模式样本池）：
+  - `04_results/02_cross_model_evaluation/invalid_evaluations/`
+
+4) **原始模型输出（PDF）**
+- `04_results/01_raw_model_outputs/<generator_model>/`
 
 ---
 
-## 如何复核任何结论（3 步）
-1) 在 `summary_tables/summary.csv`（或 `*_by_*.csv`）定位对应行  
-2) 打开 `valid_evaluations/.../` 下对应的 bundle JSON（评分与理由）  
-3) 如需追溯生成输出，到 `01_raw_model_outputs/` 找对应 PDF
+## 1) 目录地图
+
+```
+04_results/
+  01_raw_model_outputs/                  # PDF：按模型/题目/变体保存
+  02_cross_model_evaluation/
+    valid_evaluations/
+      main_method_cross_model/           # JSON：跨模型互评（主证据）
+      supporting_method_self_eval/       # JSON：自评（仅 sanity check）
+      summary_tables/                    # CSV：用于分析的汇总表
+    invalid_evaluations/
+      main_method_cross_model/           # JSON：无效（主方法）
+      supporting_method_self_eval/       # JSON：无效（辅助方法）
+      used_evaluation_protocol*.md       # 当次运行使用的协议快照（若有）
+      used_prompt_manifest*.md           # 当次运行使用的 prompt 清单快照（若有）
+      README.md                          # 无效样本如何阅读
+  03_results_analysis.md                 # 结果分析（EN）
+  03_results_analysis_ZH.md              # 结果分析（ZH）
+```
 
 ---
 
-## 接下来读什么
-- 解释与失败模式：`04_results/03_results_analysis_ZH.md`  
-- 最终结论与边界：`05_summary_and_outlook/README_ZH.md`  
-- 为什么主实验用 Prompt B：`06_methodological_addenda_and_controls/README_ZH.md`
+## 2) 什么是“主证据”/“辅助证据”/“无效池”（口径边界）
+
+- **主证据（报告/统计使用）**：
+  `valid_evaluations/main_method_cross_model/` + `summary_tables/*main_method*`
+- **辅助证据（仅 sanity check）**：
+  `valid_evaluations/supporting_method_self_eval/` + `summary_tables/*supporting_method*`
+- **无效池（绝不参与统计）**：
+  `invalid_evaluations/` 下所有内容
+
+---
+
+## 3) 复现指引（指向权威规则，不在本文件复述）
+
+- 评测规则权威入口：`03_evaluation_rules/`
+- judge 契约：`03_evaluation_rules/JUDGE_PROMPT_ZH.md`
+- 若某次运行在结果目录中落了“当次协议/清单快照”，会以：
+  `used_evaluation_protocol*.md` 与 `used_prompt_manifest*.md` 的形式出现（以实际文件为准）。
