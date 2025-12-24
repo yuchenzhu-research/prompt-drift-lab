@@ -1,54 +1,87 @@
-# 02_prompt_variants
+# 02 Prompt Variants
 
-This directory contains the prompt texts (`*.txt`) actually used in this project.
-The prompt inventory, variable hierarchy, and statistical inclusion rules are
-centrally defined in `PROMPT_MANIFEST.md`.
+This folder contains the **generator-side prompts** and their controlled variants used to probe instruction-following stability (prompt drift).
 
-- `PROMPT_MANIFEST.md`: prompt inventory, variable hierarchy (Family / Variant),
-  and statistical scope for the primary experiment
-- `*.txt`: prompt bodies used in experiments (kept free of explanatory comments
-  to preserve clean diffs)
+> This folder is **not** for judge prompts. Judge prompts and scoring rules live in: `03_evaluation_rules/` (see `JUDGE_PROMPT.md` and `EVAL_PROTOCOL.md`).
 
 ---
 
-## Directory Contents
+## 0) 30-second start
 
-- `PROMPT_MANIFEST.md`: prompt inventory and experimental inclusion rules
-- `00_baseline_prompt_A_ZH.txt`: Prompt Family A (exploratory pilot)
-- `01_structured_prompt_B_ZH.txt`: Prompt Family B (protocolized three-section format; primary experimental anchor)
-- `02_conflict_prompt_ZH.txt`: B-variant (`conflict`)
-- `03_long_prompt_ZH.txt`: B-variant (`long`)
-- `04_weak_prompt_ZH.txt`: B-variant (`weak`)
+- Want to see the exact prompts used in the experiment?
 
----
+  - Start from the manifest (recommended):
+    - `PROMPT_MANIFEST.md` (EN) / `PROMPT_MANIFEST_ZH.md` (ZH)
+  - Or inspect the prompt files directly:
+    - `00_baseline_prompt_A*.txt`
+    - `01_structured_prompt_B*.txt`
+    - `02_conflict_prompt*.txt`
 
-## How to Use (Aligned with the Experimental Pipeline)
+- Want to know how prompts connect to results?
 
-1. **Primary experiments**: Use Prompt Family B and perform controlled comparisons
-   across `baseline / conflict / long / weak`.
-2. **Pilot exploration (optional)**: Prompt Family A is used only to supplement
-   observed phenomena and mechanism hypotheses; unless it forms a fully matched
-   comparison under the same questions and protocol, it is excluded from
-   quantitative summaries.
-3. **Run logging**: Record `prompt_family`, `prompt_variant`, `prompt_file`,
-   and `prompt_hash` in configs or sample metadata to ensure reproducibility and
-   auditability.
+  - Results snapshots (if present) live under:
+    - `04_results/**/used_prompt_manifest*.md`
 
 ---
 
-## Relationship to Other Directories
+## 1) What belongs here (and what does not)
 
-- `01_experiment_design/`: experimental goals, variable definitions, and workflow
-- `02_prompt_variants/` (this directory): prompt bodies and prompt manifest
-- `03_evaluation_rules/`: validity criteria and scoring rubrics
-- `04_results/`: aggregated statistics and attribution analysis
-  (primary conclusions are anchored on Prompt Family B)
+### Belongs in `02_prompt_variants/`
+
+- Generator prompts (prompt text) and **their variants** used as experimental factors
+- A prompt manifest that maps `prompt_id / prompt_version -> filename`
+- Notes about prompt versioning (not scoring rules)
+
+### Does NOT belong here
+
+- Scoring / judging rules → `03_evaluation_rules/`
+- Results / tables / analysis → `04_results/`
 
 ---
 
-## Maintenance Principles
+## 2) Recommended manifest contract
 
-- Keep prompt bodies (`*.txt`) clean and diff-friendly; place all explanatory and
-  analytical content in `PROMPT_MANIFEST.md`.
-- When adding new prompt variants, prefer single-factor minimal diffs to avoid
-  confounded attribution.
+If `PROMPT_MANIFEST.md` exists, treat it as the **single source of truth** for prompt inventory:
+
+- `prompt_id` (stable)
+- `prompt_version` (stable label used in runs)
+- `language` (EN/ZH)
+- `filepath` (relative path in this folder)
+
+This keeps runs auditable and lets results directories snapshot the exact manifest used.
+
+---
+
+## 3) Directory map (typical)
+
+```
+02_prompt_variants/
+  README.md
+  README_ZH.md
+  PROMPT_MANIFEST.md
+  PROMPT_MANIFEST_ZH.md
+  00_baseline_prompt_A.txt
+  00_baseline_prompt_A_ZH.txt
+  01_structured_prompt_B.txt
+  01_structured_prompt_B_ZH.txt
+  02_conflict_prompt.txt
+  02_conflict_prompt_ZH.txt
+```
+
+(If your actual filenames differ, update the manifest and this README accordingly.)
+
+---
+
+## 4) Versioning rules (simple & safe)
+
+- Do not overwrite prompts silently if you want comparability.
+- Prefer: add a new file or update the manifest with a new `prompt_version`.
+- Keep `prompt_id` stable across versions so analysis can group by id.
+
+---
+
+## 5) How this connects to the rest of the repo
+
+- Experimental inputs (questions, schema) → `01_experiment_design/`
+- Scoring rules + judge contract → `03_evaluation_rules/`
+- Results + snapshots → `04_results/`
