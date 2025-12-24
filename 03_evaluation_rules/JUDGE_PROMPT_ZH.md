@@ -1,6 +1,6 @@
-# JUDGE_PROMPT
+# JUDGE_PROMPT_ZH.md (ZH)
 
-> 用途：对单条样本输出进行打分与记录证据。必须与 `03_评测规则/EVAL_PROTOCOL.md` 术语完全一致。
+> 用途：对单条样本输出进行打分与记录证据。必须与 `03_evaluation_rules/EVAL_PROTOCOL_ZH.md` 术语完全一致。
 
 ---
 
@@ -12,6 +12,7 @@
 ---
 
 ## 1. 核心约束
+
 ### 1.1 A/B 不感知
 - 你**不会**看到提示词文本本体（prompt content），也**不需要**推断提示词版本。
 - 你**不得**把 `prompt_version` 解释为 “A / B / baseline / 更好/更差”。它只是一个 meta 标签。
@@ -25,6 +26,11 @@
 ### 1.3 证据必须可追溯
 - 每个维度的评分都必须给出来自 `model_output` 的证据片段（短引用），或明确说明“未找到相关证据”。
 - 不允许凭主观臆测补充输出中不存在的内容。
+
+### 1.4 输出契约必须稳定（便于脚本聚合）
+- `meta` 必须**原样拷贝**（不得改写/归一化/重新解释）。
+- 必须覆盖 `rubric.dimensions` 的**全部维度**（不得漏维度）。
+- 顶层 key 只允许：`meta`, `scores`, `failure_tags`, `notes`（不得新增其他 key）。
 
 ---
 
@@ -67,10 +73,11 @@
 
 ## 3. 评分步骤
 对每个维度 `d in rubric.dimensions`：
-1) 阅读 `d.definition` 与 `d.bands`。
-2) 检查 `model_output` 是否满足该维度的要求。
-3) 选择最符合的 `score`。
-4) 从 `model_output` 中截取 1–3 个短片段作为证据（每段尽量短），并简述为什么这些片段支持该分数。
+1) 阅读 `d.definition` 与 `d.bands`。  
+2) 检查 `model_output` 是否满足该维度的要求。  
+3) 选择最符合的 `score`。  
+4) 从 `model_output` 中截取 1–3 个短片段作为证据（每段尽量短），并简述为什么这些片段支持该分数。  
+   - 若没有相关证据，则 `evidence: []`，并在 `rationale` 明确写“未找到相关证据”。
 
 失败归因标签（可多选，仅用于解释，不新增评分维度）：
 - A: Schema/格式错误
@@ -109,10 +116,10 @@
 ```
 
 强制要求：
-- `scores` 的 key 必须与 `rubric.dimensions[i].id` **完全一致**。
-- `evidence` 必须来自 `model_output` 的原文短片段。
-- `failure_tags` 可为空数组 `[]`。
-- `notes` 仅用于记录不确定点或输入缺失，不写结论性长文。
+- `scores` 的 key 必须与 `rubric.dimensions[i].id` **完全一致**，且必须覆盖**所有维度**（不得漏 key）。
+- `evidence` 必须来自 `model_output` 的原文短片段（或 `[]`）。
+- `failure_tags` 可为空数组 `[]`，且只能使用 `A`–`E`。
+- `notes` 必须为字符串（没有就写 `""`），仅用于记录不确定点或输入缺失，不写长结论。
 
 ---
 
@@ -121,4 +128,3 @@
 - 禁止推断 prompt 文本、推断 A/B、推断 baseline。
 - 禁止因为 `model`、`prompt_version`、`eval_set_version` 产生先验偏见。
 - 禁止改写 Rubric 的定义或引入新规则。
-

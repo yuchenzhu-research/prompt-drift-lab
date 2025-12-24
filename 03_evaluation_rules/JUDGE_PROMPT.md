@@ -1,4 +1,4 @@
-# JUDGE_PROMPT
+# JUDGE_PROMPT.md (EN)
 
 > Purpose: Score a single sample output and record evidence. All terminology **must** be fully consistent with `03_evaluation_rules/EVAL_PROTOCOL.md`.
 
@@ -26,6 +26,11 @@ You are a strict evaluator (**judge**). Your objectives are:
 ### 1.3 Evidence Must Be Traceable
 - Every score **must** be supported by evidence snippets quoted from `model_output`, or explicitly state that no relevant evidence was found.
 - Do **not** infer or hallucinate content that does not exist in the output.
+
+### 1.4 Output Contract Must Be Machine-Stable
+- Copy `meta` **verbatim** from input (do not edit, normalize, or reinterpret).
+- You **must** return scores for **all** `rubric.dimensions` (no omissions).
+- Do **not** add extra top-level keys beyond: `meta`, `scores`, `failure_tags`, `notes`.
 
 ---
 
@@ -72,6 +77,7 @@ For each dimension `d` in `rubric.dimensions`:
 2. Check whether `model_output` satisfies the requirements of this dimension.
 3. Select the most appropriate `score`.
 4. Extract **1–3 short snippets** from `model_output` as evidence (keep them concise) and briefly explain why they justify the score.
+   - If no relevant evidence exists, use `evidence: []` and state so in `rationale`.
 
 Failure attribution tags (optional, multi-select; **for explanation only, not new scoring dimensions**):
 - A: Schema / format error
@@ -112,9 +118,10 @@ You **must** output a JSON object and **only JSON**. Do not include any extra te
 
 Mandatory requirements:
 - Keys in `scores` **must exactly match** `rubric.dimensions[i].id`.
-- `evidence` must be verbatim short excerpts from `model_output`.
-- `failure_tags` may be an empty array `[]`.
-- `notes` is only for uncertainties or missing input, not for long conclusions.
+- `scores` must include **all** dimension ids in the rubric (no missing keys).
+- `evidence` must be verbatim short excerpts from `model_output` (or `[]` if none).
+- `failure_tags` may be an empty array `[]` and may only use labels `A`–`E`.
+- `notes` must be a string (use `""` if none).
 
 ---
 
