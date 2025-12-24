@@ -1,147 +1,99 @@
-protocol_version: "2.0"
+# Prompt Drift Lab — 实验协议（与现有跑出来的结果对齐版）
+# 文件：01_实验设计/实验协议.yaml
+# 对齐依据：本仓库已有的 16 份评测产物与其汇总 JSON（见 judge_chatgpt_bundle_gemini_v2.json）。
+# 原则：只写“已经发生/已经评测”的内容；不额外扩展未来想做但还没跑的配置项。
 
-meta:
-  project: "Prompt Drift Lab"
-  document_type: "experiment_protocol"
-  protocol_id: "PDL-EXP-0001"
-  created_at: "2025-12-21"
-  owner: "yuchenzhu-research"
-  contact: ""
-  repository:
-    url: ""
-    git_commit: ""
-  intent: "评估结构化输出任务在提示词微小扰动下的稳健性（prompt drift）。"
+protocol_meta:
+  protocol_id: EVAL_PROTOCOL_v2
+  protocol_version: v2
+  last_updated: 2025-12-24
+  language: zh-CN
 
-research_question:
-  phenomenon: "提示词/格式/措辞发生微小变化时的 prompt drift"
-  primary_outcomes:
-    - "指令遵循率（instruction_following_rate）"
-    - "结构稳定性（structured_output_stability）"
-    - "语义漂移发生率（semantic_drift_incidence）"
-  non_goal: "本实验不评估事实正确性或知识覆盖能力，仅评估是否按要求完成任务与结构。"
+# 评测对象（已跑的实验）
+experiment:
+  bundle:
+    bundle_size: 16
+    questions: [Q3, Q4]
+    versions: [baseline, long, weak, conflict]
+    trigger_types: [implicit, explicit]
+    # 产物命名约定（来自现有文件名）
+    file_name_template: "q{question_id} {version} {trigger_type}.pdf"
 
-task_spec:
-  question_set:
-    path: "01_实验设计/问题集.jsonl"
-    version_tag: ""
-    checksum_sha256: ""
-    note: "题集作为实验输入资产；任何修改应更新 version_tag（可选填 checksum 以便审计）。"
-  output_schema:
-    path: "01_实验设计/标准输出结构.md"
-    version_tag: ""
-    checksum_sha256: ""
-    note: "定义被测模型应输出的结构模板；评测以此为准。"
+# 目标输出格式（被评测的“三段式”）
+required_output_format:
+  # 必须按以下顺序出现；缺失或顺序错视为结构失败。
+  sections_in_order:
+    - "[事实快照]"
+    - "[ChatGPT 联网搜索指令]"
+    - "[Gemini 深度挖掘指令]"
+  # 事实快照的约束（来自现有扣分点）
+  snapshot_constraints:
+    max_chars: 50
+    must_be_factual: true
+    must_not_include:
+      - "因果解释"
+      - "延伸分析"
 
-prompt_spec:
-  variants:
-    - id: "baseline"
-      description: "对照基线版本：常规、你认为最合理的提示词。"
-    - id: "long"
-      description: "更长、更解释、更重复约束：检验“提示词更长是否更听话”。"
-    - id: "weak"
-      description: "弱化硬约束：检验结构是否依赖强指令才能维持。"
-    - id: "conflict"
-      description: "引入冲突/歧义约束：检验模型如何选择、妥协或崩坏。"
-  trigger_types:
-    - id: "implicit"
-      description: "结构要求为暗示/推荐（soft constraint）。"
-    - id: "explicit"
-      description: "结构要求为必须/严格遵守（hard constraint / strict compliance）。"
+# 评分维度（与现有打分字段一致）
+scoring:
+  scale: {min: 0, max: 2}
+  dimensions:
+    A_structure:
+      definition: "是否按三段式输出，并保持顺序正确、段落清晰。"
+      score_2: "三段式齐全，顺序正确，段落清晰。"
+      score_1: "三段式基本齐全但存在明显结构瑕疵（如顺序轻微错乱/标题不规范/段落混杂）。"
+      score_0: "未按三段式输出（或三段式仅出现在后文模板/建议中）。"
 
-run_spec:
-  execution_mode: "manual_ui"   # manual_ui | api_script
-  session_policy: "new_chat_per_sample"
-  generator_models:
-    - model_id: "chatgpt"
-      model_version: ""
-      provider: ""
-    - model_id: "gemini"
-      model_version: ""
-      provider: ""
-    - model_id: "claude"
-      model_version: ""
-      provider: ""
-  decoding_params:
-    temperature: 0
-    top_p: 1.0
-    max_tokens: null
-    seed: null
-  time_window_local: ""
-  notes: ""
+    B_snapshot_constraint:
+      definition: "[事实快照] 是否满足 ≤50 字且不夹带解释/因果。"
+      score_2: "≤50 字，纯事实描述，无解释/因果。"
+      score_1: "出现以下任一：>50 字；或包含解释/因果。"
+      score_0: "未提供事实快照或完全偏离该段要求。"
 
-design_matrix:
-  # 本轮实验实际覆盖的条件（以真实跑过的为准）
-  questions: ["q3", "q4"]
-  prompt_versions: ["baseline", "long", "weak", "conflict"]
-  triggers: ["implicit", "explicit"]
-  replicates_per_cell: 1
-  expected_total:
-    formula: "len(questions) * len(prompt_versions) * len(triggers) * len(generator_models) * replicates_per_cell"
-    value: 16
+    C_actionability:
+      definition: "[ChatGPT 联网搜索指令] 是否可直接拿去用（明确任务、强制联网、产出形态/引用要求）。"
+      score_2: "指令清晰可执行：要求联网检索；说明产出（简报/表格/引用）。"
+      score_1: "可执行但约束不够强（如未明确联网/引用/产出结构）。"
+      score_0: "不可执行或与任务无关。"
 
-artifacts:
-  raw_outputs_dir: "04_实验结果/raw_pdfs/"
-  eval_bundle_dir: "04_实验结果/eval_bundles/"
-  summary_dir: "04_实验结果/summary/"
-  naming_convention:
-    pdf_filename_pattern: "q{qid}_{version}_{trigger}_{model}_r{rep}.pdf"
-    allowed_tokens:
-      qid: ["q1", "q2", "q3", "q4"]
-      version: ["baseline", "long", "weak", "conflict"]
-      trigger: ["implicit", "explicit"]
-      model: ["chatgpt", "gemini", "claude"]
-      rep_prefix: "r"
-    note: "统一命名用于后续自动聚合与审计；不建议使用空格命名。"
+    D_completeness:
+      definition: "[Gemini 深度挖掘指令] 是否覆盖机制解释 + 结构化产出 + 实验/诊断建议。"
+      score_2: "覆盖：机制点（如对齐/解码/上下文/冲突）+ 对照表/决策树等结构化产出 + 可复现实验建议。"
+      score_1: "覆盖不全（缺机制/缺结构化产出/缺实验建议之一）。"
+      score_0: "不可执行或与任务无关。"
 
-evaluation_spec:
-  rubric:
-    path: "03_评测规则/rubric.md"
-    version_tag: ""
-    checksum_sha256: ""
-    note: "Rubric 为评分口径真值源；维度 key 必须与 eval_bundle 输出一致。"
-  judge:
-    judge_type: "llm"     # llm | human | hybrid
-    judge_model_id: "chatgpt"
-    judge_model_version: ""
-  scoring:
-    scale: "0-2"
-    orientation: "higher_is_better"
-    dimensions:
-      - key: "A_structure"
-        definition: "是否遵循目标结构/模板（段落或字段齐全且顺序正确）。"
-      - key: "B_snapshot_constraint"
-        definition: "事实快照是否做到‘只陈述不分析’，无额外解释性扩展。"
-      - key: "C_actionability"
-        definition: "搜索指令/动作是否可执行、可复现（可直接照做）。"
-      - key: "D_completeness"
-        definition: "是否覆盖题目要求的全部要点/段落，缺漏程度如何。"
-      - key: "E_drift_failure"
-        definition: "是否避免明显漂移（改任务/越界/跑题/角色混乱等）。"
-  invalid_policy:
-    definition: "仅当样本无法进入可评分空间时标记 invalid（拒答、空输出、严重截断或结构不可判定）。"
-    rule: "只要能评分，就应打分（即使很差也打低分），不要用 invalid 丢弃低分样本。"
-    required_fields: ["file", "reason"]
+    E_drift_failure:
+      definition: "是否发生明显‘漂移失败’（如任务重解释为诊断长文、结构崩坏等）。"
+      score_2: "无明显漂移失败；即便存在少量前导文本，仍完成三段式且主体未跑偏。"
+      score_1: "存在漂移迹象（明显前导分析/插入额外结构），但三段式仍可辨认。"
+      score_0: "漂移失败：输出退化为诊断/分析文本，三段式缺失或不可辨认。"
 
-bundle_output_format:
-  eval_bundle_json_required_fields:
-    - "bundle_meta"
-    - "per_file_scores"
-    - "invalid_files"
-  bundle_meta_required_fields:
-    - "bundle_size"
-    - "questions"
-    - "versions"
-    - "trigger_types"
-    - "generator_models"
-    - "judge_model"
-    - "run_params"
+# 证据记录（与现有 evidence 字段对齐）
+evidence_capture:
+  required: true
+  per_dimension_evidence: true
+  extra_signals:
+    # 现有产物里出现了该信号（用于记录，不强行当作硬阈值）。
+    preamble_nonspace_chars: true
 
-quality_checks:
-  must_pass:
-    - "所有输出文件名可解析为 (qid, version, trigger, model, rep)。"
-    - "每个 PDF 要么被评分（per_file_scores），要么进入 invalid_files（不可遗漏）。"
-    - "评分维度 key 与 rubric 完全一致。"
-    - "实际样本数与 expected_total 一致；若不一致必须解释差异。"
-  recommended:
-    - "为问题集/输出结构/rubric 记录 checksum 以支持可审计复现。"
-    - "若采用人工评分，应记录评分者与一致性/仲裁流程。"
+# 汇总输出（与现有 judge_chatgpt_bundle_gemini_v2.json 的结构一致）
+report_schema:
+  top_level_fields:
+    - bundle_meta
+    - per_file_scores
+    - aggregates
+    - final_notes
+  per_file_scores_fields:
+    - file
+    - scores
+    - total
+    - evidence
+    - notes
+
+# 已观测到的稳定现象（仅复述现有汇总，不额外推断）
+observations_from_current_run:
+  implicit_vs_explicit:
+    implicit:
+      observed: "8/8 未按三段式输出（按协议计 0 分）。"
+    explicit:
+      observed: "8/8 完成三段式；主要扣分集中在事实快照>50字或包含因果/解释。"

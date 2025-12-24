@@ -3,34 +3,35 @@
 *Prompt Drift Lab: A Reproducible Evaluation Framework for Instruction-Following Stability in LLMs*
 
 > 中文为主；模型/框架/关键术语保留英文，便于对齐学界与工业界阅读习惯。  
-> 本仓库面向两类读者：  
-> - **科研评审/导师**：关心可复现、证据链、归因逻辑  
-> - **工业 Mentor/用人方**：关心可落地的 eval 闭环、提示词版本管理、失败模式沉淀
+> 面向读者：
+> - **科研评审/导师**：关注可复现、证据链、归因逻辑
+> - **工业 Mentor/用人方**：关注可落地的 eval 闭环、提示词版本管理、失败模式沉淀
 
 ---
 
 ## 1. 研究动机（Why this exists）
 
-在真实应用中，LLM 的输出会因**提示词格式、措辞、长度、冲突约束**等微小变化而出现：
+真实应用中，LLM 的输出会因**提示词格式、措辞、长度、冲突约束**等微小变化而出现：
 - 指令遵循率下降（instruction following drop）
-- 结构/格式崩坏（format break）
+- 结构/格式崩坏（format break / schema violation）
 - 语义漂移或答非所问（semantic drift / off-topic）
 - “表面合规但关键约束漏掉”的隐性失败（silent constraint violation）
 
-我们把这类“对提示词微扰高度敏感，导致行为退化”的现象称为 **Prompt Drift**。  
-本项目做的事情很简单：把它工程化为一个可复现闭环：
+本项目将这类“对提示词微扰高度敏感、导致行为退化”的现象抽象为 **Prompt Drift**，并将其工程化为可复现闭环：
 
 > **Prompt 设计 → 批量运行 → 统一评分 → 汇总对比 → 失败归因 → 迭代沉淀**
 
 ---
 
-## 2. 你会在这个仓库里得到什么（What you get）
+## 2. 仓库包含内容（What’s inside）
 
-- 一套固定题集：`01_实验设计/问题集.jsonl`
-- 一组可对照的提示词版本：`02_提示词版本/*.txt` + `PROMPT_MANIFEST.md`
-- 一套评测协议与评委提示词：`03_评测规则/EVAL_PROTOCOL.md` + `JUDGE_PROMPT.md`
-- 一组原始产物与评测产物：PDF（模型输出）、JSON（评审记录）、CSV（统计汇总）
-- 一份“结果索引/解读入口”：`04_实验结果/`（从表格与样例证据开始读）
+- 固定题集：`01_实验设计/问题集.jsonl`
+- 实验协议与输出约束：`01_实验设计/实验协议.yaml` + `01_实验设计/标准输出结构.md`
+- 提示词版本与差分意图：`02_提示词版本/*.txt` + `02_提示词版本/PROMPT_MANIFEST.md`
+- 评测协议与评委提示词：`03_评测规则/EVAL_PROTOCOL.md` + `03_评测规则/JUDGE_PROMPT.md`
+- 结果产物与证据链入口：`04_实验结果/README.md` +（PDF 原始输出、judge JSON、汇总 CSV）
+- 方法论补充与 A/B 对照依据：`06_方法论补充与对照依据/`
+- Deep Research 搜索汇总与参考资料：`07_DeepResearch_资料汇总/`
 
 ---
 
@@ -39,27 +40,31 @@
 - **RQ1：Prompt Drift 的主要表现形态是什么？**（合规失败、结构崩坏、语义漂移、漏约束等）
 - **RQ2：哪些提示词微扰最容易触发退化？**（长度、冲突指令、弱化约束、格式要求等）
 - **RQ3：不同模型对同一微扰的敏感性是否一致？**（cross-model robustness）
-- **RQ4：失败能否被系统归因到“可修复的提示词设计缺陷”？**（可执行的改进建议）
+- **RQ4：失败能否被系统归因到“可修复的提示词设计缺陷”？**（actionable prompt fixes）
 
 ---
 
-## 4. 快速开始（Reproducibility Quickstart）
+## 4. 推荐阅读路径（30 秒定位入口）
 
-### 4.1 第一次阅读建议走这条路径
-1) 打开 `01_实验设计/README.md`：先理解题集、协议、输出结构  
-2) 打开 `02_提示词版本/PROMPT_MANIFEST.md`：明确本次对照的 Prompt 版本与差分意图  
-3) 打开 `03_评测规则/EVAL_PROTOCOL.md` 与 `JUDGE_PROMPT.md`：确认评审标准与输出格式  
-4) 在 `04_实验结果/` 里：
-   - 先看 `summary.csv`（总体现象）
-   - 再看 `main_method_*` 与 `supporting_method_*`（主方法/辅助方法对照）
-   - 最后抽样回看对应 PDF 与 judge JSON（建立证据链）
+### 4.1 读者从哪里开始
 
-> 本仓库强调：失败产物不是“丢弃”，而是作为证据链用于归因与改进。
+建议按以下顺序阅读，以最快建立“协议 → 版本 → 评分 → 结果 → 证据链”的闭环认知：
 
-### 4.2 实验纪律（强烈建议遵守）
+1) `01_实验设计/README.md`：题集范围、实验假设、协议与字段约束（含 `实验协议.yaml`）  
+2) `02_提示词版本/PROMPT_MANIFEST.md`：Prompt A/B 与变体的最小差分意图  
+3) `03_评测规则/EVAL_PROTOCOL.md` + `JUDGE_PROMPT.md`：评分维度、合规判定与输出 schema  
+4) `04_实验结果/README.md`：结果索引（summary / main_method / supporting_method / valid&invalid）  
+5) `04_实验结果/03_实验结果分析.md`：对照结论与失败归因（可回溯到 PDF 与 judge JSON）  
+6) `06_方法论补充与对照依据/README.md`：为何采用当前主方法（含 A/B 对照证据链）  
+7) `05_总结与展望/README.md`：局限、外推边界与下一步扩展路线
+
+> 核心原则：任何结论都可回溯到 `04_实验结果/01_模型原始输出/` 的原始输出与 `02_跨模型评测结果/` 的逐样本判定记录。
+
+### 4.2 实验纪律（Reproducibility Contract）
+
 - 固定：题集版本、Prompt 版本、模型版本、采样参数（temperature/seed/次数）
-- 记录：运行日志（run log）、原始输出、评审输出、汇总表
-- 协议或提示词每次修改，都应同步更新 manifest 与说明文档
+- 落盘：config / raw outputs / judged scores / summary（均可在 `04_实验结果/` 追溯）
+- 任何协议或提示词修改：同步更新 `PROMPT_MANIFEST.md` 与对应 README（保持术语一致）
 
 ---
 
@@ -68,10 +73,12 @@
 ```text
 ├── 01_实验设计/
 │   ├── README.md
-│   ├── 实验设计_五步法.md
+│   ├── eval_record.json
+│   ├── 问题集.jsonl
 │   ├── 实验协议.yaml
 │   ├── 标准输出结构.md
-│   ├── 问题集.jsonl
+│   ├── 实验设计_五步法.md
+│   ├── 术语对齐.md
 │   └── 威胁与局限.md
 │
 ├── 02_提示词版本/
@@ -80,7 +87,8 @@
 │   ├── 02_conflict_prompt.txt
 │   ├── 03_long_prompt.txt
 │   ├── 04_weak_prompt.txt
-│   └── PROMPT_MANIFEST.md
+│   ├── PROMPT_MANIFEST.md
+│   └── README.md
 │
 ├── 03_评测规则/
 │   ├── 00_评测协议.md
@@ -91,168 +99,105 @@
 │   └── compute_scores.py
 │
 ├── 04_实验结果/
-│   ├── （模型原始输出 PDF）
-│   ├── （互评/自评 judge JSON）
-│   ├── （统计汇总 CSV：summary/main_method/supporting_method 等）
-│   └── （结果解读与分析文档）
+│   ├── 01_模型原始输出/          # 原始输出（一级证据）
+│   ├── 02_跨模型评测结果/        # judge 记录与统计产物
+│   ├── 03_实验结果分析.md
+│   └── README.md                 # 结果索引入口（从这里开始看数据）
 │
 ├── 05_总结与展望/
 │   └── README.md
 │
+├── 06_方法论补充与对照依据/
+│   ├── A_B_对照依据.md
+│   ├── Prompt A_B 三段式转译器对照评测报告.pdf
+│   └── README.md
+│
+├── 07_DeepResearch_资料汇总/
+│   ├── *.pdf
+│   └── README.md
+│
 └── README.md
 ```
+
+---
+
 ## 6. 方法概览（Method Overview）
 
-本项目采用 **protocol-driven evaluation** 的工程化思路，将“提示词微小变化导致的行为退化”转化为一个可复现、可对照、可归因的评测流程。
+本项目采用 **protocol-driven evaluation**：将“提示词微小变化导致的行为退化”转化为可对照、可复现、可归因的评测流程。
 
 ### 6.1 提示词版本（Prompt Variants）
 
-使用多种具有**最小差分**的提示词版本，用于构造 *prompt perturbation space*：
+以“最小差分（minimal diffs）”构造对照组：
+- **baseline / A**：最小可用提示词（对照基线）
+- **structured / B**：显式结构化约束（字段/顺序/禁止额外文本）
+- **long**：增加上下文与冗余说明（测试长度对遵循率的影响）
+- **weak**：弱化约束（测试是否回退到自然对话）
+- **conflict**：引入张力/潜在冲突指令（测试优先级处理与对齐策略）
 
-- **baseline**：最小可用提示词，作为对照基线
-- **structured**：显式结构化约束（标题/字段/顺序）
-- **long**：增加上下文与冗余说明，用于测试“长度是否提升遵循率”
-- **weak**：弱化约束强度，测试模型是否会回退为自然对话模式
-- **conflict**：引入潜在冲突或张力指令，测试优先级处理与对齐策略
-
-每个版本的设计动机与差分说明详见：`02_提示词版本/PROMPT_MANIFEST.md`。
-
----
+差分动机与版本说明见：`02_提示词版本/PROMPT_MANIFEST.md`。
 
 ### 6.2 固定题集（Eval Set）
 
-采用固定题集（`01_实验设计/问题集.jsonl`）以确保不同提示词版本、不同模型之间的**可对照性**。
+固定题集用于确保不同 Prompt / 不同模型之间可对照：`01_实验设计/问题集.jsonl`。  
+题集规模在当前阶段刻意保持克制，以优先验证 Prompt Drift 的可观测性与可归因性（而非穷尽任务空间）。
 
-当前题集主要用于验证：
-- 指令遵循失败是否可被稳定触发
-- 不同问题类型是否会放大或抑制 Prompt Drift
+### 6.3 生成与留存（Outputs as Evidence）
 
-题集规模与领域范围在本阶段刻意保持克制，后续可扩展为多领域/多难度分层。
-
----
-
-### 6.3 模型生成（Model Outputs）
-
-对每一个组合：
-
-```
-(prompt × question × model)
-```
-
-生成模型输出，并**完整保留原始产物（PDF）**，作为后续评测、复核与归因的一级证据。
-
-本项目明确区分：
-- **模型输出失败**（实验现象，应被计入分析）
-- **评测产物无效**（数据质量问题，应被剔除以保证统计可复现）
-
----
+对每个组合 `(prompt × question × model)`：
+- 保留原始输出（PDF）作为一级证据：`04_实验结果/01_模型原始输出/`
+- 区分“模型输出失败（实验现象）”与“评测产物无效（数据质量）”，以保证统计可复现
 
 ### 6.4 评审与打分（Judging & Scoring）
 
-评测阶段采用多层次判定机制：
-
-- **主方法：跨模型互评**  
-  由模型 A 对模型 B 的输出进行评分，用于降低单一模型偏置。
-
-- **辅助方法：模型自评**  
-  作为 sanity check 与上界参考，不作为最终结论来源。
-
-评测依据统一的协议与 rubric：
+采用统一协议与 rubric：
 - `03_评测规则/EVAL_PROTOCOL.md`
 - `03_评测规则/JUDGE_PROMPT.md`
 
----
+主方法与辅助方法的定义、统计口径及一致性检查均在 `04_实验结果/README.md` 给出索引与解释。
 
 ### 6.5 汇总与归因（Aggregation & Attribution）
 
-所有评测结果通过脚本自动汇总为 CSV 表格，包括：
+通过脚本将逐样本评分汇总为表格（summary / main_method / supporting_method / valid&invalid 等），并遵循：
 
-- 总体表现（`summary.csv`）
-- 主方法统计（`main_method_*.csv`）
-- 辅助方法统计（`supporting_method_*.csv`）
-- 评委一致性分析（`*_inter_judge_agreement.csv`）
-
-分析遵循从**汇总现象 → 分组对比 → 样例回溯**的路径，所有结论均可追溯至具体 PDF 与 judge JSON。
+> 汇总现象 → 分组对比 → 样例回溯（PDF + judge JSON）  
+> 确保每条结论具备可复核证据链。
 
 ---
 
-## 7. 指标与判据（Rubric Overview）
+## 7. 指标与失败类型（Rubric & Failure Taxonomy）
 
-### 7.1 硬性合规（Hard Compliance）
+- **硬性合规（Hard Compliance）**：字段齐全、结构正确、禁止额外文本等；不合规样本标记为 invalid  
+- **行为维度评分（Behavioral Scores）**：相关性、完整性、结构稳定性、约束满足度等  
+- **失败类型（Failure Taxonomy）**：schema/格式错误、指令偏离、语义漂移、隐性漏约束等
 
-用于判定输出是否满足**最低可评测条件**：
-
-- 是否严格遵循指定输出结构（章节/字段齐全）
-- 是否出现禁止内容（额外引言、闲聊、越界输出）
-- 是否满足可验证约束（长度、关键词、列表结构等）
-
-未通过硬性合规的评测产物将被标记为 **invalid**，不进入统计汇总。
+维度定义与评分档位见：`03_评测规则/02_行为评分维度说明.md`。
 
 ---
 
-### 7.2 行为维度评分（Behavioral Scores）
+## 8. A/B 选择的对照依据（Why B over A）
 
-在通过硬性合规的前提下，对模型行为进行多维评分，包括：
+关于 Prompt A/B 的差异、三段式转译器对照评测与“选择 B 的方法论依据”，统一收口于：
+- `06_方法论补充与对照依据/A_B_对照依据.md`
+- `06_方法论补充与对照依据/Prompt A_B 三段式转译器对照评测报告.pdf`
 
-- 相关性（Relevance）
-- 完整性（Completeness）
-- 结构稳定性（Structure Integrity）
-- 约束满足度（Constraint Satisfaction）
-- 漂移控制情况（Drift / Failure Indicators）
-
-具体维度定义与打分标准详见：
-`03_评测规则/02_行为评分维度说明.md`。
+该部分用于回答“为何采用 B 作为主实验提示词版本”的证据链问题，并与 `04_实验结果` 的统计口径对齐。
 
 ---
 
-### 7.3 失败类型（Failure Taxonomy）
+## 9. 局限性（Limitations）
 
-在评分之外，额外标注失败类型，用于归因与设计改进：
-
-- 格式崩坏 / 字段缺失
-- 语义漂移 / 答非所问
-- 冲突指令处理失败（优先级错误）
-- 表面合规但关键约束漏掉（silent failures）
+- 题集规模有限：用于验证 Prompt Drift 的可观测性与归因路径，外推需谨慎  
+- 覆盖面有限：模型版本、解码参数、评委模型选择均可能改变现象边界  
+- 自动评测边界：细粒度语义差异仍需抽样人工复核（以 PDF 与 judge JSON 为证据）
 
 ---
 
-## 8. 如何阅读实验结果（How to Read the Results）
+## 10. 如何引用（Citation）
 
-建议按以下顺序浏览 `04_实验结果/` 目录：
-
-1. **总体现象**：`summary.csv`
-2. **方法级对比**：`main_method_*.csv` / `supporting_method_*.csv`
-3. **一致性检查**：`*_inter_judge_agreement.csv`
-4. **证据回溯**：对应 PDF 原始输出与 judge JSON
-
-该顺序可帮助读者从宏观趋势逐步定位到具体失败样例。
-
----
-
-## 9. 相关工作与研究位置（Positioning & Related Work）
-
-本项目关注的不是单次跑分，而是**提示词工程场景下的稳定性评测**，与以下方向形成互补关系：
-
-- 学术界：可复现评测、可验证指令、结构化输出稳定性
-- 工业界：LLM Eval 工程化、Prompt Injection / Prompt Drift 风险治理
-
-外部研究仅用于帮助定位本项目的研究位置，不替代本仓库中的实验数据与结论。
-
----
-
-## 10. 局限性（Limitations）
-
-- 题集规模有限：当前用于验证 Prompt Drift 的可观测性，而非穷尽所有任务类型
-- 模型与采样覆盖有限：不同模型版本与解码参数可能改变现象边界
-- 自动评测的边界：部分语义层面的细微差异仍需人工复核
-
----
-
-## 11. 如何引用（Citation）
-
-如在报告、复现或二次研究中使用本项目，建议同时引用：
-
+复现、报告或二次研究中，建议同时引用：
 - 本仓库（Git commit hash 或 release tag）
 - 评测协议：`03_评测规则/EVAL_PROTOCOL.md`
 - 评委提示词：`03_评测规则/JUDGE_PROMPT.md`
 - 提示词清单：`02_提示词版本/PROMPT_MANIFEST.md`
+- A/B 对照依据：`06_方法论补充与对照依据/A_B_对照依据.md`
+
