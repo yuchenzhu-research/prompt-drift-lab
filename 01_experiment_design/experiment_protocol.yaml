@@ -1,0 +1,102 @@
+# Prompt Drift Lab — Experiment Protocol (aligned with existing results)
+# File: 01_experiment_design/experiment_protocol.yaml
+# Alignment basis: 16 existing evaluation artifacts and their aggregated JSON
+# (see judge_chatgpt_bundle_gemini_v2.json).
+# Principle: only document what has already been executed and evaluated;
+# do not extend to future configurations that have not been run.
+
+protocol_meta:
+  protocol_id: EVAL_PROTOCOL_v2
+  protocol_version: v2
+  last_updated: 2025-12-24
+  language: en-US
+
+# Evaluated targets (completed experiments)
+experiment:
+  bundle:
+    bundle_size: 16
+    questions: [Q3, Q4]
+    versions: [baseline, long, weak, conflict]
+    trigger_types: [implicit, explicit]
+    # Artifact naming convention (derived from existing filenames)
+    file_name_template: "q{question_id} {version} {trigger_type}.pdf"
+
+# Required output format (evaluated “three-section” structure)
+required_output_format:
+  # Sections must appear in the following order; missing sections or
+  # incorrect ordering are treated as structural failure.
+  sections_in_order:
+    - "[Fact Snapshot]"
+    - "[ChatGPT Web Search Instruction]"
+    - "[Gemini Deep Research Instruction]"
+  # Constraints for the Fact Snapshot (derived from observed penalty cases)
+  snapshot_constraints:
+    max_chars: 50
+    must_be_factual: true
+    must_not_include:
+      - "causal explanation"
+      - "extended analysis"
+
+# Scoring dimensions (aligned with existing scoring fields)
+scoring:
+  scale: {min: 0, max: 2}
+  dimensions:
+    A_structure:
+      definition: "Whether the output follows the three-section format with correct order and clear separation."
+      score_2: "All three sections present, correct order, clear separation."
+      score_1: "Three sections mostly present but with noticeable structural flaws (e.g., slight order mismatch, non-standard headings, mixed paragraphs)."
+      score_0: "Does not follow the three-section format (or the format appears only as a template or suggestion later in the text)."
+
+    B_snapshot_constraint:
+      definition: "Whether the [Fact Snapshot] satisfies the ≤50-character limit and avoids explanations or causality."
+      score_2: "≤50 characters; purely factual; no explanation or causality."
+      score_1: "Any of the following: >50 characters; or includes explanation/causality."
+      score_0: "Fact Snapshot is missing or completely deviates from the requirement."
+
+    C_actionability:
+      definition: "Whether the [ChatGPT Web Search Instruction] is directly usable (clear task, enforced web search, specified output form and/or citation requirements)."
+      score_2: "Clear and executable: explicitly requires web search; specifies output form (brief/table) and citation requirements."
+      score_1: "Executable but with weak constraints (e.g., web search, citations, or output structure not explicitly required)."
+      score_0: "Not executable or irrelevant to the task."
+
+    D_completeness:
+      definition: "Whether the [Gemini Deep Research Instruction] covers mechanism explanation, structured outputs, and experimental/diagnostic suggestions."
+      score_2: "Covers all of the following: mechanisms (e.g., alignment, decoding, context, conflict), structured outputs (tables/decision trees), and reproducible experiment suggestions."
+      score_1: "Partially covered (missing one of: mechanisms, structured outputs, or experiment suggestions)."
+      score_0: "Not executable or irrelevant to the task."
+
+    E_drift_failure:
+      definition: "Whether an explicit drift failure occurs (e.g., task reinterpreted as a diagnostic essay, structural collapse)."
+      score_2: "No obvious drift failure; even with minor preamble text, the three-section structure is completed and the main content remains on task."
+      score_1: "Drift symptoms present (e.g., long preamble analysis or extra structures), but the three-section format remains recognizable."
+      score_0: "Drift failure: output degenerates into diagnostic/analytic text; three-section structure is missing or unrecognizable."
+
+# Evidence capture (aligned with existing evidence fields)
+evidence_capture:
+  required: true
+  per_dimension_evidence: true
+  extra_signals:
+    # This signal appears in existing artifacts (recorded, not enforced as a hard threshold).
+    preamble_nonspace_chars: true
+
+# Aggregated report schema (aligned with judge_chatgpt_bundle_gemini_v2.json)
+report_schema:
+  top_level_fields:
+    - bundle_meta
+    - per_file_scores
+    - aggregates
+    - final_notes
+  per_file_scores_fields:
+    - file
+    - scores
+    - total
+    - evidence
+    - notes
+
+# Observed stable patterns (restating existing aggregates only; no extra inference)
+observations_from_current_run:
+  implicit_vs_explicit:
+    implicit:
+      observed: "8/8 did not follow the three-section format (scored as 0 under this protocol)."
+    explicit:
+      observed: "8/8 completed the three-section format; most penalties are due to Fact Snapshot exceeding 50 characters or including causality/explanations."
