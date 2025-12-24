@@ -1,167 +1,74 @@
 # Prompt Drift Lab
-**A Reproducible Evaluation Framework for Instruction-Following Stability in Large Language Models**
+**A reproducible evaluation scaffold for instruction-following stability under prompt perturbations (prompt drift).**
 
-> This repository is primarily documented in Chinese, while key model names, frameworks, and technical terms are preserved in English to align with academic and industrial conventions.
+> Bilingual repo policy:
+> - Files **without** `_ZH` are the **English** version.
+> - Files **with** `_ZH` are the **Chinese** version.
 >
-> Intended readers:
-> - **Research reviewers / advisors**: interested in reproducibility, evidence chains, and attribution logic;
-> - **Industry mentors / practitioners**: interested in executable evaluation loops, prompt version management, and failure-mode analysis.
+> Note on PDFs:
+> - Many PDFs under `07_deep_research/` are **Chinese-only**. English native readers may not be able to read them.
+> - They are kept here **for citation, traceability, and experiment record-keeping** (not as “required reading”).
+
+- 中文版入口：[`README_ZH.md`](README_ZH.md)
 
 ---
 
-## 1. Motivation (Why This Exists)
+## 0) 30-second start
 
-In real-world applications, the behavior of large language models (LLMs) can change significantly under **small variations in prompt format, wording, length, or constraint expression**. Common manifestations include:
-
-- Decreased instruction-following performance;
-- Structural or format breakdown (format break / schema violation);
-- Semantic drift or off-topic responses;
-- *Silent constraint violations*, where outputs appear compliant but omit critical requirements.
-
-This project abstracts such prompt-sensitive behavioral degradation under the term **Prompt Drift**, and operationalizes it into a **reproducible, controlled, and attributable evaluation loop**:
-
-> **Prompt design → Batch execution → Unified judging → Aggregation & comparison → Failure attribution → Iterative refinement**
+1. **Experiment design** → `01_experiment_design/README.md`
+2. **Generator prompts & variants** → `02_prompt_variants/README.md`
+3. **Evaluation rules (protocol + judge contract)** → `03_evaluation_rules/README.md`
+4. **Results artifacts & tables** → `04_results/README.md`
+5. **Interpretation + boundaries (no new experiments)** → `05_summary_and_outlook/README.md`
 
 ---
 
-## 2. What’s Inside the Repository
+## 1) What this repo contains (by folder)
 
-This repository covers the full evaluation pipeline for Prompt Drift, including:
+- `01_experiment_design/`  
+  Questions (`eval_questions_*.jsonl`), experiment protocol (`experiment_protocol*.yaml`), output schema, and terminology alignment.
 
-- Fixed evaluation set and experimental setup: `01_experiment_design/`
-- Prompt variants and intended differences: `02_prompt_variants/`
-- Evaluation protocol and judge prompts: `03_evaluation/`
-- Results, artifacts, and evidence entry points: `04_results/`
-- Summary, limitations, and extrapolation boundaries: `05_summary_and_outlook/`
-- Methodological addenda and A/B comparison rationale: `06_methodological_addenda_and_controls/`
-- Deep research notes and reference materials: `07_deep_research/`
+- `02_prompt_variants/`  
+  **Generator-side** prompts + controlled variants (A/B/…); manifest files mapping `prompt_id/prompt_version -> file`.
 
----
+- `03_evaluation_rules/`  
+  **Judge-side** contract: protocol, validity criteria, scoring dimensions, and schema.
+  - Key entrypoints: `EVAL_PROTOCOL.md`, `JUDGE_PROMPT.md`
 
-## 3. Research Questions
+- `04_results/`  
+  Raw outputs, judged JSON/CSV tables, and analysis notes. This is the “evidence layer”.
 
-This project addresses the following questions:
+- `05_summary_and_outlook/`  
+  The **interpretive layer**: result-level summaries, implications, explicit non-claims, and future work ideas  
+  (must remain traceable to `04_results/` and `03_evaluation_rules/`).
 
-- **RQ1: What are the primary manifestations of Prompt Drift?**  
-  (instruction failure, structural breakdown, semantic drift, silent constraint omission)
+- `06_methodological_addenda_and_controls/`  
+  Rationale, controls, and methodological notes that explain *why this setup* (without overstating claims).
 
-- **RQ2: Which prompt perturbations are most likely to trigger degradation?**  
-  (length expansion, conflicting instructions, weakened constraints, structural requirements)
-
-- **RQ3: Do different models exhibit consistent sensitivity to the same perturbations?**  
-  (cross-model robustness)
-
-- **RQ4: Can failures be systematically attributed to actionable prompt design defects?**  
-  (actionable prompt fixes)
+- `07_deep_research/`  
+  Literature notes and PDFs (often Chinese-only) kept for **citation/record**.
 
 ---
 
-## 4. Recommended Reading Path (30-Second Entry)
+## 2) Claim boundary (important)
 
-### 4.1 Where to Start
-
-To quickly build a complete understanding of the evaluation loop—**protocol → prompt versions → judging → results → evidence**—we recommend the following order:
-
-1. `01_experiment_design/README.md`: evaluation scope, assumptions, protocol, and field constraints
-2. `02_prompt_variants/PROMPT_MANIFEST.md`: minimal-difference design of Prompt A/B and variants
-3. `03_evaluation/EVAL_PROTOCOL.md` and `JUDGE_PROMPT.md`: scoring dimensions, compliance rules, and output schema
-4. `04_results/README.md`: results index (summary / main_method / supporting_method / valid & invalid)
-5. `04_results/03_results_analysis_EN.md`: comparative findings and failure attribution (traceable to PDFs and judge JSON)
-6. `06_methodological_addenda_and_controls/README_EN.md`: methodological justification and A/B comparison rationale
-7. `05_summary_and_outlook/README_EN.md`: limitations, external validity, and future directions
-
-> **Core principle**: every conclusion in this repository must be traceable back to raw model outputs and per-sample judging records in `04_results/`.
-
-### 4.2 Reproducibility Contract
-
-- Fixed: evaluation set version, prompt version, model version, and sampling parameters
-- Persisted: configuration, raw outputs, judged scores, and summary tables
-- Any modification to protocols or prompts must be reflected in the corresponding manifests and README files
+- This repo is **artifact-first**: prompts, protocol, outputs, scoring, and tables are explicit.
+- Any interpretation should be **traceable** to:
+  - results in `04_results/`, and
+  - rules in `03_evaluation_rules/`.
+- Do **not** treat this repo as a benchmark with broad generalization claims beyond the recorded setup.
 
 ---
 
-## 5. Method Overview
+## 3) Quick reproducibility
 
-This project adopts a **protocol-driven evaluation** approach, transforming prompt-induced behavioral changes into controlled, reproducible, and attributable comparisons.
-
-### 5.1 Prompt Variants
-
-Comparison groups are constructed using **minimal differences**:
-
-- **Prompt A (baseline)**: minimally viable, weakly structured natural-language prompt
-- **Prompt B (structured)**: explicitly structured prompt with hard constraints (fields, ordering, prohibitions)
-- **long**: expanded context and redundant explanations
-- **weak**: systematically weakened constraint expressions
-- **conflict**: introduction of instruction tension or potential conflicts
-
-Design motivations and version details are documented in `02_prompt_variants/PROMPT_MANIFEST.md`.
-
-### 5.2 Fixed Evaluation Set
-
-A fixed evaluation set ensures comparability across prompts and models: `01_experiment_design/questions.jsonl`.  
-At the current stage, the set size is intentionally limited to prioritize **observability and attribution** over task-space coverage.
-
-### 5.3 Outputs as Evidence
-
-For each `(prompt × question × model)` combination:
-
-- Raw model outputs are preserved (PDF) as first-level evidence;
-- A clear distinction is maintained between *model output failure* (experimental phenomenon) and *invalid evaluation artifacts* (data quality issues).
-
-### 5.4 Judging and Scoring
-
-All evaluations follow a unified protocol:
-
-- `03_evaluation/EVAL_PROTOCOL.md`
-- `03_evaluation/JUDGE_PROMPT.md`
-
-Definitions of primary and supporting methods, aggregation rules, and consistency checks are indexed in `04_results/README.md`.
-
-### 5.5 Aggregation and Attribution
-
-Per-sample scores are aggregated into comparable tables and analyzed using the following discipline:
-
-> Aggregated trends → grouped comparisons → sample-level backtracking (PDF + judge JSON)
-
-This ensures that every reported observation is supported by a verifiable evidence chain.
+- Re-score / re-aggregate from existing judged outputs:
+  - see `03_evaluation_rules/compute_scores.py`
+- Full re-run (re-generating model outputs) requires external model access and is not bundled as a single turnkey script in this repo.
 
 ---
 
-## 6. Rubric and Failure Taxonomy
+## 4) Naming conventions
 
-- **Hard Compliance**: structural correctness, field completeness, and prohibition enforcement
-- **Behavioral Scores**: relevance, completeness, structural stability, and constraint satisfaction
-- **Failure Taxonomy**: format errors, instruction deviation, semantic drift, silent constraint omission
-
-Detailed definitions and scoring criteria are provided in `03_evaluation/`.
-
----
-
-## 7. Why Prompt B over Prompt A
-
-The methodological rationale for Prompt A/B differences, the three-step template comparative evaluation, and the decision to anchor the main experiment on Prompt B are consolidated in:
-
-- `06_methodological_addenda_and_controls/A_B_comparative_rationale_EN.md`
-- `06_methodological_addenda_and_controls/Prompt_A_B_three_step_template_comparative_evaluation.pdf`
-
-This section addresses the evidence-chain question of *why Prompt B is selected as the main experimental anchor*, fully aligned with the statistical practices in `04_results/`.
-
----
-
-## 8. Limitations
-
-- The evaluation set is limited in size; external generalization should be treated with caution;
-- Model versions, decoding parameters, and judge selection may affect observed boundaries;
-- Fine-grained semantic distinctions may still require sampled manual review, using PDFs and judge JSON as evidence.
-
----
-
-## 9. Citation
-
-For reproduction, reporting, or follow-up research, please cite:
-
-- This repository (Git commit hash or release tag)
-- Evaluation protocol: `03_evaluation/EVAL_PROTOCOL.md`
-- Judge prompts: `03_evaluation/JUDGE_PROMPT.md`
-- Prompt inventory: `02_prompt_variants/PROMPT_MANIFEST.md`
-- A/B comparison rationale: `06_methodological_addenda_and_controls/A_B_comparative_rationale_EN.md`
+- `_ZH` suffix = Chinese counterpart file.
+- Prefer stable ids (`question_id`, `prompt_id`, `prompt_version`) to keep runs auditable.
