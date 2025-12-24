@@ -1,81 +1,86 @@
-# Summary and Outlook (Prompt Drift Lab)
+# 05 Summary and Outlook
 
-> This document summarizes the completed experimental findings, clarifies the methodological boundaries of the current version, and outlines **future research directions without exceeding existing evidence**.
->
-> **Important clarification**: The current version of this project **does not implement any automated perturbation generator or large-scale prompt scanning**. All content below is strictly aligned with **experiments that have been completed and fully materialized in the repository**, and does not include any unimplemented methods or tools.
+This folder contains the **interpretive layer** of the project:
 
----
+- high-level findings distilled from results
+- methodological takeaways and design implications
+- boundaries, non-claims, and future extensions
 
-## 1. What This Project Has Accomplished
-
-This project investigates **Prompt Drift**—systematic deviations in large language model behavior that arise when, *holding the task constant*, prompts undergo minor changes in structure, phrasing, or constraint formulation. Such drift manifests in **instruction-following behavior, output structure stability, and semantic fidelity**.
-
-Concretely, the project establishes a **minimal yet fully reproducible experimental loop**:
-
-- **Input side (Prompt Design)**: Under fixed tasks and question sets, a small number of manually designed, interpretable prompt variants are constructed to deliberately expose failures in instruction following and structural stability.
-- **Output side (Model Outputs)**: Raw outputs produced by different models under different prompt conditions are preserved in full (PDF), and aggregated into structured result summaries (CSV).
-- **Evaluation side (Evaluation)**: Cross-model judging is adopted as the primary evaluation method, with self-judging used only as an auxiliary control. Both are governed by explicit evaluation protocols and judge prompts (see `03_evaluation/`).
-
-> **Boundary statement**: All prompt drift phenomena reported in this project arise solely from **manually designed prompt variants**. The current version does not rely on automated perturbations, random transformations, or large-scale prompt enumeration.
+> This folder does **not** introduce new experiments or new metrics. All claims here must be traceable to artifacts in `04_results/` and protocols in `03_evaluation_rules/`.
 
 ---
 
-## 2. Scope of the Main Experiment and Methodological Choices
+## 0) 30-second start
 
-To avoid misinterpretation, the repository clearly distinguishes between different experimental roles:
-
-- **Main experiment (reproducible)**: Systematic evaluation and statistical aggregation are conducted using `Prompt B` and its manually constructed variants (`long`, `weak`, `conflict`).
-- **Pilot exploration**: `Prompt A` is used only for early-stage exploration and failure discovery, and is explicitly excluded from all quantitative comparisons.
-
-**Rationale for this choice**: Selecting `Prompt B` as the main experimental baseline is not arbitrary. It follows from pilot comparisons showing superior **executability, structural stability, and auditability** relative to Prompt A. The supporting evidence and decision trail are documented in the `06_` directory.
+- Want the one-page takeaway of what this project shows? → start here.
+- Want to understand *what can and cannot be claimed* from the results? → see the limitations section below.
+- Want guidance on how this framework could be extended? → see Outlook.
 
 ---
 
-## 3. Key Observations Supported by Completed Experiments
+## 1) What belongs here (and what does not)
 
-Based on `summary.csv` and grouped evaluation results, the current version of the project supports the following observations, **without extending beyond the available evidence**:
+### Belongs in `05_summary_and_outlook/`
 
-1. **Even a very small number of manually designed prompt variations can induce substantial changes in instruction following and structural stability**.
-2. **Longer or more detailed prompts do not guarantee higher stability**; in some cases, they instead dilute constraints or trigger fallback behaviors.
-3. **Weakening constraint language (e.g., replacing *must* with *should*) significantly increases the likelihood of drift**.
-4. **Prompt variants containing internal tension or conflicting instructions more readily expose implicit priority-selection behaviors in models**.
+- **Result-level summary** (patterns, trends, qualitative observations)
+- **Interpretation** of prompt drift behaviors (grounded in results)
+- **Methodological implications** (what this eval setup is good / bad at)
+- **Explicit non-claims** (what the results do *not* show)
+- **Future work** directions (extensions, not promises)
 
----
+### Does NOT belong here
 
-## 4. Role of External Research (Interpretive Context Only)
-
-This section serves solely to align the observed phenomena with concepts discussed in existing literature, and **does not imply that the present project implements, reproduces, or compares against those methods**:
-
-- prompt brittleness / prompt sensitivity
-- instruction-following stability
-- format robustness
-
-Such work provides interpretive context for why LLM outputs may exhibit pronounced behavioral shifts under minimal prompt changes, even when input semantics remain nearly constant.
+- Raw model outputs → `04_results/01_raw_model_outputs/`
+- Judged JSON or CSV tables → `04_results/02_cross_model_evaluation/`
+- Scoring rules or judge logic → `03_evaluation_rules/`
+- Prompt text or variants → `02_prompt_variants/`
 
 ---
 
-## 5. Methodological Limitations and Future Work (Strictly Separated)
+## 2) Expected structure (recommended)
 
-### 5.1 Explicit Limitations of the Current Version
+A typical summary document in this folder should follow this order:
 
-- Prompt variations are entirely manually designed, covering a limited portion of the prompt space.
-- No automated perturbation, randomization, or systematic scanning mechanisms are included.
-- Conclusions are valid only within the current prompt space and evaluation protocol.
+1. **Scope reminder**  
+   What experiments and which result subsets are being summarized.
 
-### 5.2 Possible Directions for Future Extensions (Not Implemented)
+2. **Key observations**  
+   Robust patterns that appear across models / prompts / judges.
 
-> The following items are **potential future research directions only** and are not part of the current project implementation:
+3. **Failure modes & sensitivities**  
+   Where instruction-following breaks or becomes unstable.
 
-- Any introduction of automated perturbation generators or large-scale prompt scans should be treated as a **separate version or independent experimental report**, and must not be mixed with the quantitative conclusions of the current version.
+4. **Methodological implications**  
+   What this says about prompt robustness evaluation *as a method*.
+
+5. **Limitations & non-claims**  
+   Clear boundaries to prevent over-interpretation.
+
+6. **Outlook / extensions**  
+   How this framework could be extended in future work.
 
 ---
 
-## 6. Project Positioning Summary
+## 3) Evidence discipline
 
-The core contribution of this project lies in:
+- Every claim should be **traceable** to:
+  - a result table / JSON under `04_results/`, or
+  - a documented evaluation rule in `03_evaluation_rules/`.
 
-- **Treating prompt variation as an experimental variable rather than a tuning trick**;
-- **Demonstrating the existence and types of prompt drift through a small number of interpretable controlled comparisons**;
-- **Ensuring that all claims are auditable and reproducible through a disciplined file structure and explicit protocols**.
+- Prefer phrasing like:
+  - "we observe that..."
+  - "the results suggest..."
+  - "under this evaluation protocol..."
 
-Accordingly, Prompt Drift Lab is not intended as a comprehensive benchmark, but as a **minimal research artifact with clearly defined boundaries and evidence-responsible claims**.
+- Avoid causal or capability claims unless explicitly justified.
+
+---
+
+## 4) How this connects to the rest of the repo
+
+- Inputs & design rationale → `01_experiment_design/`
+- Prompt factors → `02_prompt_variants/`
+- Scoring protocol & judge contract → `03_evaluation_rules/`
+- Empirical evidence → `04_results/`
+
+This folder is the **bridge** between evidence and external communication (paper, workshop, report).
