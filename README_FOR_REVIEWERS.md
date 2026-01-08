@@ -1,21 +1,19 @@
-# README (for Reviewers)
+# README for Reviewers
 
-This package contains a 4-page workshop-style paper and a minimal, self-contained supplement bundle with auditable artifacts (prompt variants, evaluation rules, raw outputs, judge bundles, and derived tables).
+This repository contains a 4-page workshop-style paper and a minimal, self-contained supplement with auditable artifacts (prompt variants, evaluation rules, raw outputs, judge bundles, and derived tables).
 
 ## Package layout (top-level)
 - `paper/paper.pdf` : main text
-- `supplement/supplement_min.zip` : minimal artifact bundle (prompts, rules, results, scripts)
+- `supplement/supplement_min/` : minimal artifact bundle (prompts, rules, results, scripts)
 - `ANONYMIZATION_CHECKLIST.md` : anonymization notes
-- `CHECKSUMS.sha256` : integrity hashes for the top-level files
+- `CHECKSUMS.sha256` : integrity hashes for files in this repository
 
 ## Quick start (recommended)
+All supplementary artifacts are provided directly as an extracted directory. No decompression step is required.
+
 From the repository root:
 
 ```bash
-# 1) Extract the minimal supplement bundle
-unzip -q supplement/supplement_min.zip -d supplement/supplement_min
-
-# 2) Enter the extracted bundle (working directory for the scripts below)
 cd supplement/supplement_min
 ```
 
@@ -26,7 +24,7 @@ From `supplement/supplement_min/`, run:
 bash tools/reproduce_summary.sh
 ```
 
-Expected output (root-relative path after extraction):
+Expected output (root-relative path):
 - `supplement/supplement_min/04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/summary.csv`
 
 ## Reproduce invalid → taxonomy report
@@ -38,12 +36,12 @@ python tools/invalid_to_taxonomy.py \
   --out_dir 04_results/02_cross_model_evaluation/invalid_evaluations
 ```
 
-Expected outputs (root-relative paths after extraction):
+Expected outputs (root-relative paths):
 - `supplement/supplement_min/04_results/02_cross_model_evaluation/invalid_evaluations/invalid_report.md`
 - `supplement/supplement_min/04_results/02_cross_model_evaluation/invalid_evaluations/taxonomy_table.csv`
 
 ## If you prefer not to run scripts
-After extracting `supplement_min.zip`, you can directly inspect:
+You can directly inspect the derived artifacts at:
 - `supplement/supplement_min/04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/summary.csv`
 - `supplement/supplement_min/04_results/02_cross_model_evaluation/invalid_evaluations/invalid_report.md`
 
@@ -54,3 +52,4 @@ From the repository root:
 sha256sum -c CHECKSUMS.sha256
 # (macOS) shasum -a 256 -c CHECKSUMS.sha256
 ```
+
