@@ -1,35 +1,38 @@
-# VERSION_MAP
+# VERSION_MAP (v3)
 
-This file freezes the canonical evaluation artifact set for **Prompt Drift Lab**.
+This file freezes the **canonical evaluation contract artifacts** for *Prompt Drift Lab*.
 
-- **Frozen version:** v2.1
-- **Frozen date:** 2026-01-06
-- **Policy:** Any *behavioral* change to the evaluation contract MUST bump this version (v2.2, v2.3, …) and regenerate SHA256.
+## Bundle metadata
 
-## Canonical artifacts (frozen)
+- **Bundle tag:** v3
+- **Frozen date:** 2026-01-07
+- **Scope:** the hash-locked files below are the minimum set needed to (a) interpret prompts, (b) apply the evaluation contract, and (c) verify integrity of those contracts used by the released results.
+- **Versioning policy:**
+  - **Behavioral** changes to the evaluation contract (rules / scoring / required schemas) ⇒ bump **major or minor** and regenerate SHA256.
+  - **Editorial / packaging** changes (README, folder notes, wording that does not change evaluation behavior) ⇒ stay within the same major bundle (v3.x if tagged).
+
+## Canonical artifacts (hash-locked)
 
 | Artifact ID | Lang | Path | SHA256 |
 |---|---|---|---|
-| PROMPT_MANIFEST_EN | EN | `02_prompt_variants/PROMPT_MANIFEST.md` | `e5c3045cf9a015a195e71d75871e197bc2d4ca8ef64597d538484bf831a48533` |
-| PROMPT_MANIFEST_ZH | ZH | `02_prompt_variants/PROMPT_MANIFEST_ZH.md` | `0e40d346b97e157d3e6b13af93529b611bed644134fa2269ddb0d449d0b390d4` |
-| EVAL_PROTOCOL_EN | EN | `03_evaluation_rules/EVAL_PROTOCOL.md` | `8e9b30ddc7e4f14f21a9e523777291b372577bc1dc4a1518599bec245945ae1b` |
-| EVAL_PROTOCOL_ZH | ZH | `03_evaluation_rules/EVAL_PROTOCOL_ZH.md` | `174f80cbfb8f814f239ca912bfcfaaf827bb10e6cb7b15e87aae91687106a9b4` |
-| JUDGE_PROMPT_EN | EN | `03_evaluation_rules/JUDGE_PROMPT.md` | `6511ae8c32326c1a7f0f209236dbddc7baf2d55ab36ce84888b03f7ad816d3c4` |
-| JUDGE_PROMPT_ZH | ZH | `03_evaluation_rules/JUDGE_PROMPT_ZH.md` | `38fa7142a4bb05310ea065d96dcbd44f91413330b6e6c1d0e92dc22493bf59d4` |
+| PROMPT_MANIFEST_EN | EN | `02_prompt_variants/PROMPT_MANIFEST.md` | `b41263003a003871ec58cc67ed75137cfc061d5630de51a5c87910010f9cd6ab` |
+| PROMPT_MANIFEST_ZH | ZH | `02_prompt_variants/PROMPT_MANIFEST_ZH.md` | `75e3f253ddcd60187763b35fae8fbefd75fa03933257e8f3dcddb4ac98d67b2f` |
+| EVAL_PROTOCOL_EN | EN | `03_evaluation_rules/EVAL_PROTOCOL.md` | `a11da0d75ffa334ad6fecc966418b7ddf48e0d362d7e7a204360f9ecd79a4227` |
+| EVAL_PROTOCOL_ZH | ZH | `03_evaluation_rules/EVAL_PROTOCOL_ZH.md` | `ba82d6f870246ba2afc315ae68cf2d0754486540b84f9be499dc8c4f282572bc` |
+| JUDGE_PROMPT_EN | EN | `03_evaluation_rules/JUDGE_PROMPT.md` | `09a46b67af647a974f392f48fb826fd3c5e5860a79338679b2cf9aeef198d148` |
+| JUDGE_PROMPT_ZH | ZH | `03_evaluation_rules/JUDGE_PROMPT_ZH.md` | `c95f4c06f8f28646cec7c4063950df43693a949d403660032575349998b94e93` |
 
 ## How to verify (one command)
 
-From repo root:
+From `supplement/supplement_min/`:
 
 ```bash
 sha256sum -c VERSION_MAP.sha256
 ```
 
-Expected: all entries show `OK`.
+Expected: every line shows `OK`.
 
-## How to bump the version
+## Notes on non-canonical folders (01/05/06/07)
 
-1. Duplicate your intended changes **only** into the canonical artifact files above.
-2. Update the `PDL_VERSION` header inside each artifact.
-3. Recompute SHA256 and update both `VERSION_MAP.md` and `VERSION_MAP.sha256`.
-4. Re-run one end-to-end evaluation and store a new `runs/YYYY-MM-DD_.../summary/` row that references the new version.
+Folders `01_experiment_design/`, `05_summary_and_outlook/`, `06_methodological_addenda_and_controls/`, and `07_deep_research/` are **supporting materials**.  
+They are included for reviewer convenience and audit trail, but are **not** part of the hash-locked evaluation contract above.
