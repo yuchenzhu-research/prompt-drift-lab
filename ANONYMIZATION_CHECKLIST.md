@@ -3,7 +3,7 @@
 This package is intended for double-blind review.
 
 ## Must-pass checks
-- [ ] No author names, affiliations, emails, or personal links in `paper/paper_main.pdf`.
+- [ ] No author names, affiliations, emails, or personal links in `paper/paper.pdf`.
 - [ ] No author names, affiliations, emails, or personal links in supplemental files.
 - [ ] No identity strings in filenames (e.g., usernames, real names).
 - [ ] No OS-specific junk (`__MACOSX/`, `.DS_Store`).
@@ -12,5 +12,5 @@ This package is intended for double-blind review.
 ## Quick grep (run locally)
 ```bash
 # Adjust keywords as needed
-grep -RIn --exclude-dir=.git -E "Yuchen|Zhu|Shanghai University|yuchenzhu|上海|朱宇晨" .
+grep -RIn --exclude-dir=.git -E "YOUR_NAME|YOUR_EMAIL|YOUR_UNIVERSITY|/Users/|github\.com|openreview\.net" .
 ```
