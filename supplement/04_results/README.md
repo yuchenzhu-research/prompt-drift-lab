@@ -8,7 +8,7 @@ This folder contains **all experiment artifacts** produced by running the evalua
 
 If you want the **interpretation** (A/B rationale, drift attribution, failure modes), read:
 - `04_results/03_results_analysis.md`
-- and, for methodological rationale / controls: `06_methodological_addenda_and_controls/`
+- and, for methodological rationale / controls: `05_methodological_addenda_and_controls/`
 
 ---
 
@@ -20,15 +20,15 @@ If you want the **interpretation** (A/B rationale, drift attribution, failure mo
 2) **Breakdowns (CSV)**
 - Main method (cross-model judging):
   - `.../summary_tables/main_method_by_generator.csv`
-  - `.../summary_tables/main_method_by_version.csv`
+  - `.../summary_tables/main_method_by_variant.csv`
   - `.../summary_tables/main_method_by_question.csv`
-  - `.../summary_tables/main_method_by_question_version.csv`
+  - `.../summary_tables/main_method_by_question_variant.csv`
   - `.../summary_tables/main_method_inter_judge_agreement.csv`
 - Supporting method (self-eval sanity check):
   - `.../summary_tables/supporting_method_by_generator.csv`
-  - `.../summary_tables/supporting_method_by_version.csv`
+  - `.../summary_tables/supporting_method_by_variant.csv`
   - `.../summary_tables/supporting_method_by_question.csv`
-  - `.../summary_tables/supporting_method_by_question_version.csv`
+  - `.../summary_tables/supporting_method_by_question_variant.csv`
 
 3) **Judge outputs (JSON)**
 - Valid:

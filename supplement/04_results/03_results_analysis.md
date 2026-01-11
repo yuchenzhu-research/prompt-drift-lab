@@ -2,8 +2,8 @@
 
 **You are here:** `04_results/03_results_analysis.md`  
 **Upstream:** `01_experiment_design/` → `02_prompt_variants/` → `03_evaluation_rules/`  
-**Downstream:** `05_summary_and_outlook/`  
-**Sidecar:** `06_methodological_addenda_and_controls/` (controls & rationale), `07_deep_research/` (references)
+**Downstream:** (none; narrative lives in the paper)  
+**Sidecar:** `05_methodological_addenda_and_controls/` (controls & rationale)
 
 ## Purpose (What this document is responsible for)
 This document explains **how to interpret the reported results** and provides a **failure-mode / attribution lens** for prompt drift.
@@ -30,7 +30,7 @@ Prompt drift refers to **systematic changes in model behavior** caused by small 
 - **Prompt A (exploratory):** faster iteration, looser constraints, useful for collecting failure cases early.
 - **Prompt B (protocol-ready):** stronger structure anchoring and enforceable constraints, improving cross-sample comparability.
 
-> Design choice rationale and any control comparisons should be documented in `06_methodological_addenda_and_controls/`.
+> Design choice rationale and any control comparisons should be documented in `05_methodological_addenda_and_controls/`.
 
 ## Invalid evaluations & failure modes (used for diagnosis, not for scoring)
 Some runs are excluded from quantitative aggregation and stored as **invalid evaluations**. These samples are used to:
@@ -38,7 +38,8 @@ Some runs are excluded from quantitative aggregation and stored as **invalid eva
 - explain non-comparability,
 - drive protocol/prompt improvements **without changing existing conclusions**.
 
-### Failure taxonomy (covers the core drift types)
+### Qualitative categorization of observed failure patterns (exploratory)
+This categorization is qualitative and exploratory, and no finalized categorization scheme is claimed in this submission.
 A. **Schema / format errors**: missing fields, wrong order/type, extra text, broken JSON/structure  
 B. **Instruction deviation**: missed requirements, ignored constraints, unsolicited steps  
 C. **Semantic drift**: wrong answer, missing key info, contradictions/hallucinations  
@@ -46,7 +47,7 @@ D. **Robustness / variance**: high run-to-run instability under the same prompt
 E. **Rubric gaming**: keyword compliance without solving the task
 
 ### Suggested flags (for invalid buckets)
-Use flags to keep diagnosis consistent across versions:
+Use flags to keep diagnosis consistent across variants:
 - `PROTOCOL_VIOLATION`, `UNPARSABLE_OUTPUT`, `INCOMPLETE_COVERAGE`
 - `JUDGE_REFUSAL_OR_EVASION`, `INTERNAL_INCONSISTENCY`, `CONTEXT_MISALIGNMENT`
 - `SELF_JUDGING_BIAS` (supporting only; not headline evidence)
@@ -59,8 +60,8 @@ When you observe drift, document it as:
 4) **Count**: report frequency (and variance if repeated runs are available)
 
 ## Reproducibility checklist (what must be traceable)
-For every claim you write in `05_summary_and_outlook/`, ensure you can point to:
+For every claim you write in the paper, ensure you can point to:
 - a row in the summary table (or an aggregation rule),
 - the corresponding raw outputs,
 - the judged scores + rationale snippets,
-- the exact prompt version / judge prompt id / run config.
+- the exact prompt variant / judge prompt id / run config.

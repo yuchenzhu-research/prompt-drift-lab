@@ -168,7 +168,7 @@ An evaluation is classified as **invalid** and must be placed under `invalid_eva
 
 For each evaluation run, record the following in run logs:
 
-- Judge model and version (if available)
+- Judge model and variant (if available)
 - Decoding parameters (temperature, top\_p, max\_tokens)
 - Tool or web access (if enabled)
 - Evaluation time range and sample count
