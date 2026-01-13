@@ -1,130 +1,74 @@
-# Artifact Overview for Reviewers
+# Prompt Drift Lab
 
-## Language Authority and Translation Policy
+## Overview
 
-**Authoritative Language (Single Source of Truth)**
+This repository documents an experimental study on **prompt drift** in large language models. The focus is on how small, localized changes in prompt structure, wording, or formatting can lead to systematic failures in instruction following, output schema compliance, and semantic alignment.
 
-All experimental designs, task definitions, data schemas, evaluation rules, and reported results in this artifact are **authoritatively defined in Chinese**.  
-`*_ZH` files are authoritative for experiment definitions and evaluation rules; English files are non-authoritative references provided for reviewer readability.
-
-Files under `supplement/02_prompt_variants/*.txt` are preserved prompt assets used in actual execution and are **not constrained by the _ZH authority rule**.
+The work emphasizes empirical observation over optimization. Rather than proposing improved prompting techniques, it examines where and how existing prompts degrade under realistic variations.
 
 ---
 
-**Role of English Materials**
+## Motivation
 
-All English-language files **without** the `_ZH` suffix are provided **solely to assist non-Chinese reviewers** in understanding the structure, intent, and inspection workflow of the artifact. These English files:
+Prompt-based interactions are often treated as static artifacts. In practice, prompts evolve: constraints are reordered, clarifications are appended, formatting is adjusted, and language drifts over time.
 
-- Do **not** define independent experiments, configurations, or evaluation rules
-- Do **not** introduce alternative parameter settings or result interpretations
-- Do **not** carry legal, methodological, or engineering authority
+This project treats prompt drift as a first-class experimental variable and asks:
 
----
-
-**Conflict Resolution Rule**
-
-In the event of any inconsistency, omission, or difference in level of detail between Chinese (`*_ZH`) and English files, **the Chinese version is definitive**.  
-English materials are not guaranteed to be line-by-line translations and may be simplified for readability. Such differences **do not imply multiple experimental tracks or variant implementations**.
+> When prompts change in minor, seemingly innocuous ways, which behaviors fail and which remain stable?
 
 ---
 
-## Scope of This Artifact
+## Experimental Framing
 
-This repository contains the complete artifact accompanying the workshop submission.  
-It is intentionally scoped to **analysis-level reproducibility**.
+The experimental design separates exploration from measurement:
 
-No end-to-end re-execution of model inference (prompt → model output) is claimed or required.
+- **Exploratory prompts** are used to expose a broad surface of potential failure modes.
+- **Protocolized prompts** are used to measure those failures under fixed and auditable conditions.
 
----
-
-## Authoritative Result Set
-
-All quantitative results, analyses, and comparisons reported in the paper are derived **exclusively from the fixed result files located in**:
-
-- `supplement/04_results/02_cross_model_evaluation/valid_evaluations/`
-
-The JSON files in this directory constitute the **complete and closed result set** used for evaluation, aggregation, and table generation.
-
-No results outside this directory are selected, filtered, excluded, or incorporated.  
-The paper does **not** rely on any subset selection, post-hoc exclusion, or cherry-picking of outcomes.
-
-Reviewers may verify completeness by inspecting the full set of JSON files in this directory and checking their consistency with the evaluation rules and summary tables.
+This separation allows failure behavior to be observed without allowing uncontrolled variance to affect quantitative results.
 
 ---
 
-## Reproducibility Definition
+## Failure Modes Studied
 
-This artifact distinguishes two layers of reproducibility:
+The analysis focuses on recurring categories of failure:
 
-1. **Model inference (prompt → model output)**
+1. Instruction-following degradation
+2. Output format and schema violations
+3. Semantic drift and content deviation
+4. Instability across repeated or near-identical runs
 
-   Model outputs were collected via web-based LLM interfaces. Due to the lack of deterministic decoding controls (e.g., fixed seeds or API-level access), **model inference itself is not reproducible**.
-
-2. **Evaluation, aggregation, and analysis (output → scores → tables)**
-
-   All quantitative results reported in the paper are derived from **fixed model outputs** stored under:
-
-   - `supplement/04_results/`
-
-   The evaluation contracts, aggregation logic, and summary tables are fully inspectable and logically reproducible from these fixed artifacts.
-
-Accordingly, this submission supports **analysis-level reproducibility**, rather than re-execution of model inference.
+Failures are evaluated across multiple prompt variants and multiple model families under a fixed evaluation protocol.
 
 ---
 
 ## Repository Structure
 
-The artifact is organized as follows:
+This repository is organized as a complete, auditable artifact:
 
-- `supplement/01_experiment_design/`  
-  Experiment tasks, schemas, and protocols.
+- **Experiment design**: task definitions, schemas, and protocols
+- **Prompt variants**: baseline, structured, conflicting, long, and weak prompts
+- **Evaluation rules**: judge contracts, rubrics, and scoring logic
+- **Results**: fixed model outputs, judged records, and summary tables
+- **Methodological addenda**: controls and interpretation boundaries
 
-- `supplement/02_prompt_variants/`  
-  Prompt variants and prompt manifests.
-
-- `supplement/03_evaluation_rules/`  
-  Evaluation contracts, rubrics, and scoring logic.
-
-- `supplement/04_results/`  
-  Fixed model outputs, judged records, and summary tables.
-
-- `supplement/05_methodological_addenda_and_controls/`  
-  Additional controls and methodological notes.
+All reported quantitative results are derived exclusively from the artifacts stored in this repository.
 
 ---
 
-## How Reviewers Can Inspect the Artifact
+## Reproducibility Scope
 
-Reviewers are **not expected to run any scripts**.
+Two layers of reproducibility are distinguished:
 
-Suggested inspection flow (≈3–5 minutes):
+- **Model generation** (prompt → output), which is inherently non-deterministic under web-based interfaces
+- **Evaluation and analysis** (output → scores → tables), which is fully inspectable and logically reproducible
 
-1. Inspect evaluation rules and rubrics in `supplement/03_evaluation_rules/`.
-2. Inspect fixed model outputs and judged records in `supplement/04_results/`.
-3. Verify that summary tables under:
-
-   - `supplement/04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/`
-
-   are consistent with the provided rules and records.
-
-All scripts included in the repository serve to make the analysis logic explicit and auditable; they are **not required** for reproduction.
+Accordingly, this repository supports analysis-level reproducibility rather than end-to-end re-execution of model inference.
 
 ---
 
-## Notes on Execution and Dependencies
+## Scope and Limitations
 
-- No script in this repository is designated as a required execution entry point.
-- No API keys, external services, or model interfaces are needed to inspect the artifact.
-- All quantitative claims in the paper are supported by pre-computed artifacts included in this package.
+This work does not claim comprehensive coverage of prompt robustness or model behavior. It is intentionally narrow in scale and conservative in its claims.
 
----
-
-## Note on English Question Set
-
-`eval_questions_EN.jsonl` is provided as a **non-authoritative English reference** for reviewer readability.
-
-The authoritative evaluation questions used in all experiments are defined exclusively in:
-
-- `supplement/01_experiment_design/eval_questions_ZH.jsonl`
-
-The English question set may be abbreviated or simplified and **does not define an independent or alternative experimental task**.
+Its value lies in making failure behavior explicit, traceable, and auditable under controlled variations, rather than in maximizing performance or breadth.
