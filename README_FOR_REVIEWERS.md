@@ -1,82 +1,130 @@
-# README for Reviewers
+# Artifact Overview for Reviewers
 
-This repository contains a 4-page workshop-style paper and a minimal, self-contained supplement with auditable artifacts (prompt variants, evaluation rules, raw outputs, judge bundles, and derived tables).
+## Language Authority and Translation Policy
 
-## Package layout (top-level)
-- `paper/paper.pdf` : main text
-- `supplement/` : minimal artifact bundle (prompts, rules, results, scripts)
-- `ANONYMIZATION_CHECKLIST.md` : anonymization notes
-- `CHECKSUMS.sha256` : integrity hashes for files in this repository
+**Authoritative Language (Single Source of Truth)**
 
-## Quick start (recommended)
-After unzipping this package, all supplementary artifacts are available as plain files (no nested archives).
+All experimental designs, task definitions, data schemas, evaluation rules, and reported results in this artifact are **authoritatively defined in Chinese**.  
+`*_ZH` files are authoritative for experiment definitions and evaluation rules; English files are non-authoritative references provided for reviewer readability.
 
-From the repository root:
+Files under `supplement/02_prompt_variants/*.txt` are preserved prompt assets used in actual execution and are **not constrained by the _ZH authority rule**.
 
-```bash
-cd supplement
-```
+---
 
-> Note: All commands below are verified on macOS/Linux using `python3`.
+**Role of English Materials**
 
-## Tasks covered in this submission
+All English-language files **without** the `_ZH` suffix are provided **solely to assist non-Chinese reviewers** in understanding the structure, intent, and inspection workflow of the artifact. These English files:
 
-This submission covers the following tasks. All reported CSV tables are derived
-from the same set of valid evaluations and differ only by aggregation or slicing
-dimension.
+- Do **not** define independent experiments, configurations, or evaluation rules
+- Do **not** introduce alternative parameter settings or result interpretations
+- Do **not** carry legal, methodological, or engineering authority
 
-- **Q1 (Cross-model robustness)**: Robustness across different model generators.
-  - Tables aggregated by generator (e.g., `*_by_generator.csv`) and overall summaries.
+---
 
-- **Q2 (Judge consistency)**: Agreement and consistency across independent judges
-  under identical evaluation rules.
-  - Tables reporting inter-judge agreement (e.g., `*_inter_judge_agreement.csv`).
+**Conflict Resolution Rule**
 
-- **Q3 (Prompt sensitivity)**: Sensitivity to prompt variants, wording, and
-  constraint formulations.
-  - Tables sliced by prompt variant, question variant, or row-level instances
-    (e.g., `*_by_variant.csv`, `*_by_question_variant.csv`, `*_by_row.csv`).
+In the event of any inconsistency, omission, or difference in level of detail between Chinese (`*_ZH`) and English files, **the Chinese version is definitive**.  
+English materials are not guaranteed to be line-by-line translations and may be simplified for readability. Such differences **do not imply multiple experimental tracks or variant implementations**.
 
-- **Q4 (Invalid evaluations, qualitative only)**: Analysis of invalid evaluation
-  cases for diagnostic and qualitative inspection.
-  - Invalid cases are not included in any quantitative CSV tables.
+---
 
-No other tasks are claimed or evaluated.
+## Scope of This Artifact
 
+This repository contains the complete artifact accompanying the workshop submission.  
+It is intentionally scoped to **analysis-level reproducibility**.
 
-## Reproduce the main summary table
-From `supplement/`, run:
+No end-to-end re-execution of model inference (prompt → model output) is claimed or required.
 
-```bash
-bash tools/reproduce_summary.sh
-```
+---
 
-Expected output (root-relative path):
-- `supplement/04_results/02_cross_model_evaluation/valid_evaluations/summary_tables_reproduced/main_method_by_generator.csv` (and related CSVs)
+## Authoritative Result Set
 
-(For convenience, the same tables are also included as precomputed files under `.../summary_tables/`.)
+All quantitative results, analyses, and comparisons reported in the paper are derived **exclusively from the fixed result files located in**:
 
-> **Scope note:** No finalized quantitative taxonomy is reported or claimed in this submission.
+- `supplement/04_results/02_cross_model_evaluation/valid_evaluations/`
 
-## Invalid Evaluation Artifacts
-Invalid evaluation cases are provided for qualitative inspection only. They are used to contextualize and diagnose observed behaviors and are **not** aggregated into any finalized quantitative taxonomy.
+The JSON files in this directory constitute the **complete and closed result set** used for evaluation, aggregation, and table generation.
 
-If you prefer not to run scripts, you can directly inspect the qualitative artifacts at:
-- `supplement/04_results/02_cross_model_evaluation/invalid_evaluations/`
+No results outside this directory are selected, filtered, excluded, or incorporated.  
+The paper does **not** rely on any subset selection, post-hoc exclusion, or cherry-picking of outcomes.
 
-## If you prefer not to run scripts
-You can directly inspect the derived quantitative artifacts at:
-- `supplement/04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/main_method_by_generator.csv` (and related CSVs)
+Reviewers may verify completeness by inspecting the full set of JSON files in this directory and checking their consistency with the evaluation rules and summary tables.
 
-(For convenience, the same tables are also included as precomputed files under `.../summary_tables/`.)
+---
 
-## Integrity check (optional)
-From the repository root:
+## Reproducibility Definition
 
-```bash
-sha256sum -c CHECKSUMS.sha256
-# (macOS) shasum -a 256 -c CHECKSUMS.sha256
+This artifact distinguishes two layers of reproducibility:
 
-# Note: CHECKSUMS.sha256 intentionally does not contain an entry for itself.
-```
+1. **Model inference (prompt → model output)**
 
+   Model outputs were collected via web-based LLM interfaces. Due to the lack of deterministic decoding controls (e.g., fixed seeds or API-level access), **model inference itself is not reproducible**.
+
+2. **Evaluation, aggregation, and analysis (output → scores → tables)**
+
+   All quantitative results reported in the paper are derived from **fixed model outputs** stored under:
+
+   - `supplement/04_results/`
+
+   The evaluation contracts, aggregation logic, and summary tables are fully inspectable and logically reproducible from these fixed artifacts.
+
+Accordingly, this submission supports **analysis-level reproducibility**, rather than re-execution of model inference.
+
+---
+
+## Repository Structure
+
+The artifact is organized as follows:
+
+- `supplement/01_experiment_design/`  
+  Experiment tasks, schemas, and protocols.
+
+- `supplement/02_prompt_variants/`  
+  Prompt variants and prompt manifests.
+
+- `supplement/03_evaluation_rules/`  
+  Evaluation contracts, rubrics, and scoring logic.
+
+- `supplement/04_results/`  
+  Fixed model outputs, judged records, and summary tables.
+
+- `supplement/05_methodological_addenda_and_controls/`  
+  Additional controls and methodological notes.
+
+---
+
+## How Reviewers Can Inspect the Artifact
+
+Reviewers are **not expected to run any scripts**.
+
+Suggested inspection flow (≈3–5 minutes):
+
+1. Inspect evaluation rules and rubrics in `supplement/03_evaluation_rules/`.
+2. Inspect fixed model outputs and judged records in `supplement/04_results/`.
+3. Verify that summary tables under:
+
+   - `supplement/04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/`
+
+   are consistent with the provided rules and records.
+
+All scripts included in the repository serve to make the analysis logic explicit and auditable; they are **not required** for reproduction.
+
+---
+
+## Notes on Execution and Dependencies
+
+- No script in this repository is designated as a required execution entry point.
+- No API keys, external services, or model interfaces are needed to inspect the artifact.
+- All quantitative claims in the paper are supported by pre-computed artifacts included in this package.
+
+---
+
+## Note on English Question Set
+
+`eval_questions_EN.jsonl` is provided as a **non-authoritative English reference** for reviewer readability.
+
+The authoritative evaluation questions used in all experiments are defined exclusively in:
+
+- `supplement/01_experiment_design/eval_questions_ZH.jsonl`
+
+The English question set may be abbreviated or simplified and **does not define an independent or alternative experimental task**.
