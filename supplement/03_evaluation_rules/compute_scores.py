@@ -2,19 +2,27 @@
 # -*- coding: utf-8 -*-
 
 """
-compute_scores.py
+DEPRECATED — ARCHIVAL ONLY
 
-Utility script used for computing evaluation scores during analysis.
+This file documents the original scoring and aggregation logic used during
+early-stage analysis and debugging.
 
-This file is provided for **auditability of scoring logic only**.
-It is **NOT intended to be a stable or required execution entry point for reviewers**.
+It is retained **solely for auditability and traceability of scoring logic**.
+It is **NOT a required execution entry point**, and reviewers are **not expected
+or required to run this script**.
 
-All results reported in the paper and supplement are **pre-computed** and stored under:
-    supplement/04_results/
+All results reported in the paper and supplement are produced via the unified,
+end-to-end pipeline implemented in:
 
-Reviewers are not expected to run this script.
-No end-to-end reproducibility is claimed by executing this file.
+tools/reproduce_valid_evaluations.py
+
+Processed outputs are stored under:
+
+supplement/04_results/03_processed_evaluations/
+
+No reproducibility claims rely on executing this file.
 """
+
 
 import argparse
 import json

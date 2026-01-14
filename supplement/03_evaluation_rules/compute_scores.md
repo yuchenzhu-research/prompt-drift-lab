@@ -3,7 +3,7 @@
 ## File Role and Scope
 
 This file provides a **conceptual explanation** of the scoring and aggregation logic
-implemented in `compute_scores.py`.
+originally implemented in `compute_scores.py`.
 
 - This document is **not executable**
 - It is **not** an entry point for evaluation or aggregation
@@ -12,62 +12,68 @@ implemented in `compute_scores.py`.
 All quantitative results reported in the paper and supplements are **pre-computed and fixed** in:
 
 ```
-supplement/04_results/
+supplement/04_results/03_processed_evaluations/
 ```
 
 Reviewers are **not expected** to run any scoring scripts to audit the artifact.
 
 ---
 
-## Relationship to `compute_scores.py`
+## Relationship to the Execution Pipeline
+
+- **`tools/reproduce_valid_evaluations.py`**
+  - The **only authoritative execution entry point** for evaluation processing
+  - Performs schema validation, validity filtering, and score aggregation
 
 - **`compute_scores.py`**
-  - The **only implementation** of scoring and aggregation logic
-  - Consumes **schema-valid evaluation records** defined by:
-    - `schema/eval_record.schema.json`
+  - **Deprecated**
+  - Retained solely for archival inspection of legacy scoring logic
+  - Not invoked by the final reproducible pipeline
 
 - **`compute_scores.md` (this file)**
-  - A **human-readable explanation** of the above logic
-  - Provides design intent and audit context only
+  - A **human-readable explanation** of the scoring design and intent
   - Introduces **no alternative execution paths**
 
-In case of any discrepancy, the behavior of **`compute_scores.py`** takes precedence.
+In case of any discrepancy, the behavior of **`tools/reproduce_valid_evaluations.py`** takes precedence.
 
 ---
 
 ## Design Principles
 
-The scoring logic is designed around the following principles:
+The scoring logic follows three guiding principles:
 
-1. **Analysis-level reproducibility**
-   - Guarantees consistency between fixed outputs, scoring rules, and summary tables
+1. **Analysis-level reproducibility**  
+   Fixed result files, scoring rules, and summary tables are mutually consistent.
 
-2. **No dependency on external APIs or non-deterministic execution**
-   - Model inference and online services are out of scope
+2. **Determinism**  
+   No external APIs, online services, or non-deterministic components are involved.
 
-3. **Auditable, not runnable**
-   - Scripts exist to support transparency and inspection, not to reproduce experiments
+3. **Auditability over executability**  
+   Scripts exist to support transparency and inspection, not to reproduce experiments.
 
 ---
 
 ## Conceptual Scoring Flow
 
-At a high level, the scoring and aggregation process follows these steps:
+At a high level, the scoring and aggregation process consists of:
 
-1. **Inputs**
-   - A collection of **schema-valid evaluation records**
+1. **Inputs**  
+   - Schema-valid evaluation records  
    - A fixed scoring rubric defined by the evaluation rules
 
-2. **Validation**
-   - Schema conformance checks
+2. **Validation**  
+   - Schema conformance checks  
    - Presence and completeness checks for required fields
 
-3. **Scoring and Aggregation**
-   - Per-record aggregation according to the rubric
-   - Construction of structured summary records
+3. **Aggregation**  
+   - Per-record aggregation according to the rubric  
+   - Collapsing multiple judge scores into a single aggregated score per evaluated output
 
-4. **Outputs**
-   - Structured summary files used in `supplement/04_results/`
+4. **Outputs**  
+   - Structured summary files stored under:
+     ```
+     supplement/04_results/03_processed_evaluations/
+     ```
 
 This document intentionally avoids implementation details to prevent
 any interpretation as a secondary execution specification.
@@ -83,14 +89,14 @@ any interpretation as a secondary execution specification.
 All reported results originate exclusively from:
 
 ```
-supplement/04_results/
+supplement/04_results/03_processed_evaluations/
 ```
 
 ---
 
 ## Reviewer Reading Guide
 
-To understand the evaluation and aggregation logic, reviewers may:
+To audit the evaluation logic, reviewers may:
 
 1. Read `eval_protocol.md`
 2. Read `scoring_dimensions.md`

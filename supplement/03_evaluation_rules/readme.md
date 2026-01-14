@@ -34,19 +34,18 @@ specified by the evaluation rules in this directory.
 It is included **for transparency and auditability only**.
 
 **Important clarifications:**
-- This file is **not** an executable reproduction script
-- Reviewers are **not expected** to run this script
-- Numerical results are **not regenerated** from this file
+- This file is **deprecated** and **not** an executable reproduction script
+- Reviewers are **not expected** to run this file
+- No numerical results are regenerated from this file
 
-The authoritative definitions are given by the rule documents and schema listed above.
+All authoritative behavior is defined by the rule documents and schemas listed above.
 
 ### `compute_scores.md`
 
 This document provides a **human-readable explanation** of the aggregation logic
-implemented in `compute_scores.py`.
+originally implemented in `compute_scores.py`.
 
-It serves as the primary reference for understanding how per-item scores are
-combined and summarized.
+It serves purely as explanatory material and introduces **no alternative execution path**.
 
 ---
 
@@ -86,7 +85,7 @@ All execution artifacts and fixed results are stored under:
 supplement/04_results/
 ```
 
-Executable reproduction is provided separately under:
+Executable reproduction is provided **exclusively** via:
 
 ```
 supplement/tools/reproduce_valid_evaluations.py
