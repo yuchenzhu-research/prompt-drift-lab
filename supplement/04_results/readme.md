@@ -101,13 +101,13 @@ Here, `<generator_model>` denotes the generator model name as part of the direct
 │   │
 │   └── invalid_evaluations/
 │       ├── case_study_implicit_role_drift.md
-│       ├── README.md
+│       ├── readme.md
 │       ├── invalid_report.md
 │       ├── main_method_cross_model/
 │       └── supporting_method_self_eval/
 │
 ├── 03_results_analysis.md
-└── README.md
+└── readme.md
 ```
 
 Angle-bracketed or brace-delimited terms indicate naming conventions rather than literal file or directory names.

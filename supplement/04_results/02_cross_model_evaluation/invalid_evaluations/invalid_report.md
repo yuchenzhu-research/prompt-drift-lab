@@ -30,7 +30,7 @@ Each invalid record in this directory is marked using one or more **failure flag
 
 These flags are defined in:
 
-- `supplement/03_evaluation_rules/FAILURE_TAXONOMY.md`
+- `supplement/03_evaluation_rules/failure_taxonomy.md`
 
 Failure flags **do not replace scoring dimensions**. They explain *why* an evaluation record is excluded from aggregation.
 

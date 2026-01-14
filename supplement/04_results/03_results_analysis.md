@@ -57,7 +57,7 @@ Analysis distinguishes between:
 
 Protocol-level failures are identified using **failure flags** (e.g., `PROTOCOL_VIOLATION`, `UNPARSABLE_OUTPUT`) as defined in:
 
-- `supplement/03_evaluation_rules/FAILURE_TAXONOMY.md`
+- `supplement/03_evaluation_rules/failure_taxonomy.md`
 
 Narrative groupings (e.g., schema violations, instruction deviation) are used for descriptive reporting only and do not redefine failure labels.
 
