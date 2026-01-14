@@ -1,30 +1,33 @@
-# 04 Results
+# 04 Results — Overview
 
-This folder contains **all experiment artifacts** produced by running the evaluation pipeline. It serves as the **only authoritative index** of concrete result files used in analysis.
+This directory contains **all concrete experiment artifacts** produced by executing the evaluation pipeline.
+It serves as the **single authoritative index** of result files used for analysis and reporting.
 
-**Data flow (single direction):** raw model outputs → structured evaluations → aggregated analysis.
+**Data flow:**
 
-Raw model outputs are first collected under `01_raw_model_outputs/`, then evaluated into structured judgment records under `02_cross_model_evaluation/` (with valid and invalid cases separated), and all reported statistics and analyses are derived **exclusively** from aggregated tables generated from **valid evaluations**.
+raw model outputs → structured evaluations → aggregated analysis
 
-Contents include:
-- raw model outputs (PDFs),
-- judged evaluation records (JSON),
-- aggregated summary tables (CSV),
-- and a short narrative analysis.
+Raw model outputs are collected under `01_raw_model_outputs/`, evaluated into structured judgment records under `02_cross_model_evaluation/`, and summarized via aggregated tables derived **exclusively from valid evaluations**.
 
-If you are looking for **interpretation** (A/B rationale, drift attribution, failure modes), read:
-- `04_results/03_results_analysis.md`
-- and, for methodological rationale / controls: `05_methodological_addenda_and_controls/`
+---
+
+## Scope and Guarantees
+
+- This directory contains **only realized artifacts** produced by the experiment.
+- No results are inferred, reconstructed, or implied beyond the files present here.
+- All reported statistics in the paper trace back to files listed in this directory.
+
+Invalid evaluations are retained for **auditability and diagnostic purposes only** and are excluded from all quantitative aggregation.
 
 ---
 
 ## File Naming Conventions
 
-Files and subdirectories under `04_results/` follow consistent, rule-based **naming conventions**.
+Files and subdirectories under `04_results/` follow fixed, rule-based **naming conventions**.
 
-In explanatory text, schematic expressions such as `{model}`, `{judge}`, or `<generator_model>` are used **only to describe variable components in these naming patterns**. They do **not** refer to literal filenames or directories that must exist verbatim in the artifact.
+In explanatory text, schematic expressions such as `{model}`, `{judge}`, or `<generator_model>` are used **only to describe variable components** of these naming patterns. They do **not** refer to literal filenames or directories that must exist verbatim.
 
-All concrete result files are explicitly present in the directories listed below. No additional result files are implied beyond those visible here.
+All concrete result files are explicitly present in the directory tree below.
 
 ---
 
@@ -57,16 +60,16 @@ This file is the **single entry point** for all quantitative results reported in
 
 ### 3) Judged evaluation records (JSON)
 
-**Valid evaluations (used for all aggregation and tables):**
-- Main method (cross-model judging):  
-  `04_results/02_cross_model_evaluation/valid_evaluations/main_method_cross_model/`
-- Supporting method (self-evaluation sanity check):  
-  `04_results/02_cross_model_evaluation/valid_evaluations/supporting_method_self_eval/`
+**Valid evaluations (used for all aggregation):**
+- Main method (cross-model judging):
+  - `04_results/02_cross_model_evaluation/valid_evaluations/main_method_cross_model/`
+- Supporting method (self-evaluation sanity check):
+  - `04_results/02_cross_model_evaluation/valid_evaluations/supporting_method_self_eval/`
 
 **Invalid evaluations (excluded from all statistics):**
 - `04_results/02_cross_model_evaluation/invalid_evaluations/`
 
-Invalid evaluations are preserved **only for auditability and failure-mode diagnosis** and never enter quantitative analysis.
+Invalid evaluations are preserved **only for auditability and failure-mode diagnosis**.
 
 ---
 
@@ -74,11 +77,11 @@ Invalid evaluations are preserved **only for auditability and failure-mode diagn
 
 - `04_results/01_raw_model_outputs/<generator_model>/`
 
-Here, `<generator_model>` denotes the model that produced the raw output and is part of the directory naming convention, rather than a literal placeholder.
+Here, `<generator_model>` denotes the generator model name as part of the directory naming convention, not a literal placeholder.
 
 ---
 
-## 5) Directory map
+## Directory map
 
 ```
 04_results/
@@ -97,6 +100,7 @@ Here, `<generator_model>` denotes the model that produced the raw output and is 
 │   │   └── summary_tables/
 │   │
 │   └── invalid_evaluations/
+│       ├── case_study_implicit_role_drift.md
 │       ├── README.md
 │       ├── invalid_report.md
 │       ├── main_method_cross_model/
@@ -106,5 +110,4 @@ Here, `<generator_model>` denotes the model that produced the raw output and is 
 └── README.md
 ```
 
-Angle-bracketed or brace-delimited terms (e.g., `<generator_model>`, `{model}`) indicate naming conventions or schema components, not literal directory or file names.
-
+Angle-bracketed or brace-delimited terms indicate naming conventions rather than literal file or directory names.
