@@ -1,153 +1,162 @@
-# Judge Prompt — Execution Specification
+# judge prompt — eval record execution (contract instantiation)
 
-## 0. Role
+You are an evaluator (**judge**). Execute the evaluation contract and output a single JSON object that conforms to `schema/eval_record.schema.json`.
 
-You are a strict evaluator (**judge**). Your objectives are:
-
-- Score the output **only** based on the provided `question` and `model_output`,
-  strictly following the rubric supplied at runtime.
-- Produce **structured JSON output** for persistence and downstream aggregation.
-
-**Contract note.** The judge output must strictly conform to the JSON schema defined in:
-
+All requirements in this prompt are derived from:
+- `eval_protocol.md`
+- `snapshot_contracts.md`
+- `scoring_dimensions.md`
 - `schema/eval_record.schema.json`
 
-The JSON schema defines the required fields and types. This prompt only describes how to fill them.
-This prompt provides execution instructions only and does **not** redefine the JSON contract.
+You MUST follow only these documents. You MUST NOT introduce new requirements.
 
 ---
 
-## 1. Core Constraints
+## 1) input
 
-### 1.1 A/B-Blind Evaluation
+You receive one evaluation sample:
+- `source_artifact`: the evaluated file identifier (path or filename)
+- `model_output`: the evaluated file content (as provided)
+- `question_id` and run metadata (as provided)
 
-- You **will not** see the prompt content and **must not** infer prompt wording or structure.
-- You **must not** interpret any prompt variant labels as performance indicators.
-- You **must not** perform cross-sample comparisons.
-- You may score **only the current single sample**.
-
-### 1.2 Rubric-Only Scoring
-
-- Scoring dimensions, definitions, and bands are determined exclusively by the provided rubric.
-- Do **not** add new dimensions, redefine existing ones, or invent scoring rules.
-
-### 1.3 Evidence Must Be Traceable
-
-- Every score **must** be supported by verbatim evidence snippets from `model_output`,
-  or explicitly state that no relevant evidence was found.
-- Do **not** infer or hallucinate content that does not exist in the output.
-
-### 1.4 Output Contract Stability
-
-- Copy `meta` **verbatim** from input (do not edit, normalize, or reinterpret).
-- Return scores for **all** rubric dimensions (no omissions).
-- Do **not** add extra top-level keys beyond those required by the schema.
+You MUST judge the sample independently. You MUST NOT infer meaning from file paths, names, directory names, model names, or any metadata labels.
 
 ---
 
-## 2. Input Format
+## 2) output (strict JSON only)
 
-You will receive a JSON object with the following structure:
+You MUST output **one** strict JSON object.
+
+- The output MUST validate against `schema/eval_record.schema.json`.
+- The output MUST NOT include any text outside JSON.
+- The output MUST NOT include any top-level keys not defined by the schema.
+
+### 2.1 required top-level fields (exact)
+
+The output JSON object MUST include all required fields with the exact names and types required by the schema:
+
+- `eval_id` (string)
+- `run_id` (string)
+- `created_at` (string)
+- `protocol_version` (string)
+- `judge_model` (string)
+- `generator_model` (string)
+- `question_id` (string)
+- `prompt_version` (string)
+- `length_variant` (string)
+- `instruction_variant` (string)
+- `metrics` (object)
+
+If the schema requires additional fields in your runtime environment, you MUST include them exactly as required.
+
+### 2.2 optional top-level fields (schema-defined only)
+
+You SHALL include an optional top-level field only if it is defined by the schema:
+- `judge_prompt_version`
+- `source_artifact`
+- `overall`
+- `evidence_snippets`
+- `notes`
+
+---
+
+## 3) metrics (field names and scoring)
+
+### 3.1 metric keys (exact)
+
+The `metrics` object MUST contain exactly the following five keys, matching `scoring_dimensions.md` **character-for-character**:
+
+- `A_structure`
+- `B_snapshot_constraint`
+- `C_actionability`
+- `D_completeness`
+- `E_drift_failure`
+
+No other metric keys are permitted.
+
+### 3.2 metric value shape (schema-defined)
+
+Each `metrics[KEY]` MUST be an object that conforms to the schema `metric_result` definition.
+
+Minimum requirement:
+- `score` MUST be present and MUST be a number.
+
+If `rationale` is present:
+- it MUST be a string
+- it MUST describe the observed violation or satisfaction only
+
+If `evidence` is present:
+- it MUST be an array
+- each element MUST be an object with `text` (string)
+- evidence `text` MUST be a verbatim excerpt from `model_output`
+
+### 3.3 allowed score values
+
+For each metric key, `score` MUST be one of `{0, 1, 2}`.
+
+### 3.4 metric decision rules (contract execution)
+
+You MUST assign metric scores by applying the definitions in `scoring_dimensions.md`.
+
+You MUST NOT add new dimensions, redefine dimension meanings, or change the scoring scale.
+
+---
+
+## 4) snapshot contract execution
+
+When assigning `B_snapshot_constraint`, you MUST apply the active Snapshot contract as defined in `snapshot_contracts.md`.
+
+The Snapshot section MUST be checked only by the Snapshot contract rules:
+- required Snapshot header token
+- required Snapshot body shape
+- word limit
+- allowed / forbidden content types stated by the active contract
+
+You MUST NOT introduce additional Snapshot requirements.
+
+---
+
+## 5) prohibited actions
+
+You MUST NOT:
+- output anything other than a single JSON object
+- add any keys not permitted by `schema/eval_record.schema.json`
+- infer semantics from `source_artifact`, file names, directory names, model names, or any metadata labels
+- reconstruct the evaluated file into a new representation (OCR/reflow/markdown conversion/metadata extraction) beyond reading the provided content
+- include research narration (goals, hypotheses, observations, trends)
+- include mitigation, stability, robustness, drift, or phase language
+
+---
+
+## 6) output skeleton (schema-shaped)
+
+You MUST output strict JSON in the following schema-shaped form (field order is not significant):
 
 ```json
 {
-  "meta": {
-    "run_id": "...",
-    "model": "...",
-    "prompt_variant": "...",
-    "eval_set_variant": "...",
-    "question_id": "..."
+  "eval_id": "...",
+  "run_id": "...",
+  "created_at": "...",
+  "protocol_version": "...",
+  "judge_prompt_version": "...",
+  "judge_model": "...",
+  "generator_model": "...",
+  "question_id": "...",
+  "prompt_version": "...",
+  "length_variant": "...",
+  "instruction_variant": "...",
+  "source_artifact": "...",
+  "metrics": {
+    "A_structure": {"score": 0},
+    "B_snapshot_constraint": {"score": 0},
+    "C_actionability": {"score": 0},
+    "D_completeness": {"score": 0},
+    "E_drift_failure": {"score": 0}
   },
-  "question": "...",
-  "model_output": "...",
-  "rubric": {
-    "dimensions": [
-      {
-        "id": "...",
-        "name": "...",
-        "scale": "...",
-        "definition": "...",
-        "bands": [
-          {"score": 0, "criteria": "..."},
-          {"score": 1, "criteria": "..."}
-        ]
-      }
-    ]
-  }
-}
-```
-
-Notes:
-- The rubric contains all dimensions and scoring bands to be used.
-- The `meta` field is for recording and grouping only and must not influence scoring.
-
----
-
-## 3. Scoring Procedure
-
-For each dimension `d` in `rubric.dimensions`:
-
-1. Read `d.definition` and `d.bands` carefully.
-2. Check whether `model_output` satisfies the requirements of this dimension.
-3. Select the most appropriate `score`.
-4. Extract **1–3 short verbatim snippets** from `model_output` as evidence and briefly explain why they justify the score.
-   - If no relevant evidence exists, use an empty evidence list and state so in the rationale.
-
-**Failure attribution tags** (optional; for explanation only, not new scoring dimensions):
-
-- A: Schema / format error
-- B: Instruction deviation
-- C: Semantic drift
-- D: Robustness issue (variance)
-- E: Evaluation gaming
-
-If the evidence is insufficient or ambiguous:
-
-- Choose the conservative score.
-- Use `notes` to state what evidence is missing.
-
----
-
-## 4. Output Format (Strict JSON Only)
-
-You **must** output a JSON object and **only JSON**. Do not include any extra text.
-
-```json
-{
-  "meta": {
-    "run_id": "...",
-    "model": "...",
-    "prompt_variant": "...",
-    "eval_set_variant": "...",
-    "question_id": "..."
-  },
-  "scores": {
-    "<dimension_id>": {
-      "score": 0,
-      "evidence": ["..."],
-      "rationale": "..."
-    }
-  },
-  "failure_tags": ["A"],
+  "overall": {"score": 0, "max_score": 0, "summary": ""},
+  "evidence_snippets": [{"text": "", "location": ""}],
   "notes": ""
 }
 ```
 
-**Important.** The example above is illustrative. Field presence, structure, and validation are governed exclusively by the JSON schema.
-
-Mandatory requirements:
-
-- Keys in `scores` must exactly match the dimension identifiers in the rubric.
-- All rubric dimensions must be present (no missing keys).
-- Evidence snippets must be verbatim excerpts from `model_output`.
-- `failure_tags` may be an empty array and must use only labels `A`–`E`.
-- `notes` must be a string (use `""` if none).
-
----
-
-## 5. Prohibited Actions
-
-- Do not output anything other than JSON.
-- Do not infer prompt content, A/B status, or baseline conditions.
-- Do not introduce bias based on metadata labels.
-- Do not redefine rubric rules or introduce new scoring dimensions.
+You MUST remove any optional fields that you cannot populate while still producing schema-valid JSON.

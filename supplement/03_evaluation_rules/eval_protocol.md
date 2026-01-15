@@ -1,91 +1,168 @@
 # eval protocol
 
-This document describes how we generate, screen, and interpret judge records in this repo.
+## 0. authority and precedence
 
-It is intentionally narrow:
-- it explains the evaluation flow and what counts as a valid record
-- it does not redefine the JSON format
+This file (**`eval_protocol.md`**) is the **only normative authority** for evaluation rules in `supplement/03_evaluation_rules/`.
 
-The JSON structure is defined by:
-- `/supplement/03_evaluation_rules/schema/eval_record.schema.json`
-
----
-
-## snapshot rules: what we follow when wording conflicts
-
-Snapshot constraints are taken from `snapshot_contracts.md`.
-
-If the judge prompt or other docs phrase Snapshot differently, we follow:
-1) `snapshot_contracts.md`
-2) the active judge prompt text
-3) other notes and readmes
-
-Each run records which Snapshot contract was used (see Section 5.1).
+- If any other document (including `snapshot_contracts.md`, `scoring_dimensions.md`, `failure_taxonomy.md`, `judge_prompt.md`, `readme.md`) conflicts with this file, **this file MUST be followed**.
+- `schema/eval_record.schema.json` defines the **mechanical JSON shape** only. It MUST be used for validation, but it MUST NOT be treated as an alternative source of evaluation rules.
+- Other documents are **subordinate references**. They may describe or list items, but they MUST NOT introduce parallel definitions.
 
 ---
 
-## 1. what gets evaluated
+## 1. scope
 
-### 1.1 evaluated artifacts
-- model outputs produced under controlled prompt conditions
-- artifacts are be stored as pdf
+This protocol defines:
+- what the judge receives as input
+- what the judge MUST produce as output
+- what counts as a valid/invalid judge record
+- the atomic unit for aggregation (`per_file_scores`)
+- phase rules (Phase 0 / 1 / 2)
 
-### 1.2 input bundle
-- a bundle is a fixed set of artifacts from a run
-- bundle composition is logged for traceability
-- composition is not used as a scoring prior
-
----
-
-## 2. evaluation output
-
-Each evaluation produces one JSON record.
-That record must conform to:
-- `schema/eval_record.schema.json`
-
-Aggregation and verification operate only on schema-valid records.
+This protocol does **not** define research claims, effect sizes, or performance conclusions.
 
 ---
 
-## 3. judging setup
+## 2. terms
 
-### 3.1 cross-model judging (primary)
-- a judge model evaluates artifacts produced by another model
-- artifacts are evaluated independently
-- primary statistics are computed from schema-valid cross-model records
+### 2.1 evaluated file
+An **evaluated file** is one artifact produced by a model run.
 
-Records that break the schema or required evidence constraints are treated as invalid and excluded from primary statistics.
+- In this repo, an evaluated file is stored as a **PDF** that contains a model output.
+- The PDF is treated as an **opaque container** whose visible content is the only material the judge may use.
 
-### 3.2 self-judging (secondary)
-- a generator model may judge its own outputs under the same protocol
-- self-judging is used for consistency checks only
-- it is not the sole basis for conclusions
+### 2.2 bundle
+A **bundle** is a fixed set of evaluated files grouped for convenience (e.g., a directory listing).
 
----
+- Bundle membership MAY be logged for traceability.
+- Bundle membership MUST NOT be used as a scoring prior.
 
-## 4. validity screening
+### 2.3 judge record
+A **judge record** is a single JSON object produced by the judge.
 
-A judge record is invalid if:
-- it is not strict JSON
-- it fails the JSON schema (missing fields, wrong types, etc.)
-- required evidence fields are missing or not verbatim
-- it violates structural constraints defined by the evaluation rules (including Snapshot constraints)
-
-Invalid records are excluded from primary aggregation and kept for protocol compliance analysis.
+- It MUST conform to `schema/eval_record.schema.json`.
+- It MUST contain `per_file_scores` entries as specified in Section 4.
 
 ---
 
-## 5. recording and consistency
+## 3. judge input and prohibited behaviors
 
-- judges are asked to score based on the artifact content and the stated contract
-- metadata labels are used for grouping and logging, not as a scoring shortcut
-- a run is defined by: the prompt variant, the judge prompt, the schema, and recorded metadata
+### 3.1 judge input (what the judge receives)
+For each evaluated file, the judge input MUST be:
+1) the evaluated file content (PDF)
+2) the active evaluation rules (this protocol + any referenced subordinate lists)
+3) the active scoring scale definitions (as referenced, without redefining precedence)
 
-### 5.1 required run metadata (snapshot)
+No other inputs are permitted.
 
-Each run records:
-- `snapshot_contract_id`
-- `snapshot_word_limit`
-- `snapshot_allow_extension`
+### 3.2 prohibited behaviors (semantic constraints)
+The judge MUST NOT:
+- **re-parse** or reconstruct the PDF into a new representation (e.g., OCR, reflowing, converting to markdown, extracting metadata) beyond reading the visible content as provided
+- **manually reinterpret** the task by injecting unstated assumptions
+- **infer semantics** from file paths, file names, directory names, model names, or bundle composition
+- use any external knowledge of this repo structure as a scoring shortcut
 
-Values are expected to match the chosen contract in `snapshot_contracts.md`.
+The evaluated file name MAY be included in the record for alignment and traceability (Section 4.2), but it MUST NOT affect scoring.
+
+---
+
+## 4. evaluation output and atomic unit
+
+### 4.1 output (what the judge produces)
+Each evaluation run MUST produce **one** judge record (one JSON object).
+
+- The record MUST be strict JSON.
+- The record MUST validate against `schema/eval_record.schema.json`.
+
+### 4.2 `per_file_scores` is the core atomic unit
+`per_file_scores` is the **only atomic unit** used for aggregation.
+
+Rules:
+- **One evaluated file MUST map to exactly one `per_file_scores` entry.**
+- **All aggregation and summary statistics MUST be computed only from `per_file_scores` entries** that pass validity screening (Section 5).
+- Any additional fields (bundle metadata, run metadata, notes) MUST NOT be used as an alternative scoring base.
+
+### 4.3 file name preservation without semantic use
+For each `per_file_scores` entry:
+- the `file` field MUST preserve the file name **character-for-character** (no normalization, no path rewriting)
+- the `file` field MUST be used for **alignment only** (mapping outputs back to artifacts)
+- the judge MUST NOT use the `file` field to infer intent, difficulty, or expected content
+
+---
+
+## 5. validity screening (what counts as valid)
+
+A judge record MUST be marked invalid if any of the following holds:
+- the output is not strict JSON
+- JSON schema validation fails (missing fields, wrong types, extra structure violations)
+- any required evidence field is missing, empty, or not verbatim when verbatim is required by the referenced rule text
+- any structural constraint required by the active phase (Section 6) is violated
+
+Invalid records:
+- MUST be kept for protocol compliance analysis
+- MUST NOT be included in primary aggregation
+
+---
+
+## 6. phases (Phase 0 / 1 / 2)
+
+This repo defines three phases. Phases differ only by **judge mode** and **structural constraints**.
+
+### 6.1 Phase 0 (v0): diagnostic
+Phase 0 is **diagnostic only**.
+
+- Phase 0 records MUST be labeled as Phase 0 in run metadata.
+- Phase 0 outputs MUST NOT be used for final claims.
+- Phase 0 MAY relax constraints compared to Phase 1/2, but any relaxations MUST be explicitly stated in the Phase 0 judge prompt.
+
+### 6.2 Phase 1 (v1): primary judging
+Phase 1 is the primary mode used for aggregation.
+
+- Phase 1 MUST enforce the active structural constraints stated in the judge prompt and referenced rule lists.
+- Phase 1 validity MUST follow Section 5.
+
+### 6.3 Phase 2 (v2): strict structure enforcement
+Phase 2 is a stricter structure mode.
+
+- Phase 2 MUST enforce all Phase 1 requirements.
+- Phase 2 MUST additionally enforce any extra structural constraints stated for Phase 2 in the judge prompt.
+
+Notes:
+- Phase identifiers MUST be recorded in run metadata.
+- A run MUST NOT mix multiple phases within a single judge record.
+
+---
+
+## 7. cross-model judging and self-judging
+
+### 7.1 cross-model judging
+Cross-model judging is when the judge model evaluates artifacts produced by a different model.
+
+- Each evaluated file MUST be scored independently.
+- Cross-model records that pass validity screening (Section 5) MAY be aggregated.
+
+### 7.2 self-judging
+Self-judging is when the generator model judges its own outputs.
+
+- Self-judging records MAY be generated.
+- Self-judging records MUST be labeled as self-judging in metadata.
+- Self-judging records MUST NOT be the sole basis of aggregated results.
+
+---
+
+## 8. references (subordinate, non-parallel)
+
+The following documents are subordinate references. They MUST NOT override this protocol.
+
+- `snapshot_contracts.md`: lists snapshot constraints used by judge prompts
+- `scoring_dimensions.md`: lists scoring dimensions and rubric text
+- `failure_taxonomy.md`: defines failure labels (labels only)
+- `judge_prompt.md`: the active judge instruction text used to elicit records
+- `schema/eval_record.schema.json`: mechanical JSON validation schema
+
+---
+
+## 9. change control
+
+- Any change to this protocol MUST be versioned by commit.
+- Runs MUST record the protocol version identifier used (e.g., commit hash or protocol tag) in run metadata.

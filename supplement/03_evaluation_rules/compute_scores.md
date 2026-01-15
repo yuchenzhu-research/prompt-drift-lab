@@ -1,86 +1,83 @@
-# compute scores — explanatory note
+# compute scores — deterministic JSON-to-summary mapping (archival)
 
-## file role and scope
+## 0. scope (hard)
 
-This file explains the scoring and aggregation logic at a conceptual level.
+This file specifies the **mechanical behavior** of `compute_scores.py` only.
 
-- It is not executable.
-- It is not an entry point for evaluation or aggregation.
-- It does not define, override, or reinterpret any evaluation rules or JSON contracts.
-
-All quantitative results referenced by the paper and supplements are pre-computed and stored under:
-
-```
-supplement/04_results/03_processed_evaluations/
-```
-
-Reviewers are not expected to run any scripts to audit this artifact.
+- It SHALL describe only actions that `compute_scores.py` actually performs.
+- It MUST NOT introduce evaluation rules, scoring rules, validity rules, or any analysis narrative.
+- It MUST NOT parse PDFs or read any natural-language sections from model outputs.
 
 ---
 
-## how this relates to the pipeline
+## 1. stable inputs (CLI only)
 
-- `tools/reproduce_valid_evaluations.py`
-  - The only script used in the reproducible processing pipeline
-  - Performs schema validation, validity screening, and aggregation
+`compute_scores.py` MUST consume only the following stable inputs:
 
-- `compute_scores.py`
-  - Deprecated
-  - Kept for inspection of legacy logic only
-  - Not used to produce the final result tables
+- `--run_dir`: path to one run directory (string path)
+- `--rubric`: path to one rubric markdown file (string path)
+- `--output`: path to one output JSON file (string path)
 
-This file exists to make the aggregation logic easier to read without treating it as a second specification.
-
-If there is any mismatch between this note and the code path used for reproduction, follow:
-
-- `tools/reproduce_valid_evaluations.py`
+The script MUST NOT:
+- read or parse any PDF files
+- read any model output text content
+- use directory names, file names, or model names as semantic signals
+- use any `bundle_meta`-like metadata to make decisions
 
 ---
 
-## what gets aggregated
+## 2. deterministic procedure (same input → same output)
 
-Inputs:
-- schema-valid evaluation records
-- the scoring dimensions defined in `scoring_dimensions.md`
-- the protocol constraints defined in `eval_protocol.md`
+Given the same CLI arguments and filesystem existence state, the script MUST behave deterministically.
 
-Processing steps (conceptual):
-1. validate JSON schema conformance
-2. apply binary validity screening (see `validity_criteria.md`)
-3. aggregate per-record scores according to the rubric
-4. write fixed summary tables under:
-   `supplement/04_results/03_processed_evaluations/`
+The procedure is:
 
-This note intentionally avoids implementation details.
+1) Check `run_dir` exists and is a directory.
+2) Check `rubric` file exists.
+3) Create parent directory for `output` if needed.
+4) Write exactly one JSON object to `output` with the fields defined in Section 3.
 
----
+The procedure MUST NOT depend on:
+- filesystem traversal order
+- OS-specific directory listing order
+- path name semantics
 
-## boundary statements
-
-- This file does not provide runnable code.
-- It does not claim to reproduce model generations.
-- It should not be used to regenerate or modify any reported results.
-
-All reported results originate from the fixed files under:
-
-```
-supplement/04_results/03_processed_evaluations/
-```
+No randomness SHALL be used.
 
 ---
 
-## reviewer reading guide
+## 3. output JSON (exact fields)
 
-To audit the evaluation logic:
-1. read `eval_protocol.md`
-2. read `scoring_dimensions.md`
-3. inspect the fixed result files in `supplement/04_results/`
+The script MUST write a single JSON object to `--output` with exactly these keys:
 
-No script execution is required for consistency checks.
+- `run_dir`: string (the CLI `--run_dir` value serialized)
+- `rubric`: string (the CLI `--rubric` value serialized)
+- `status`: string, fixed value `"ok"`
+- `note`: string, fixed value `"Utility script executed for internal analysis only."`
+
+The output MUST be valid strict JSON.
 
 ---
 
-## closing note
+## 4. prohibited content (hard)
 
-This file is here to reduce reading overhead.
-It is a short design note, not a component of the experiment.
+This file (and the script behavior it describes) MUST NOT include:
+
+- any aggregation of `per_file_scores`
+- any computation over judge records
+- any explanation of what averages/variance mean
+- any statement of “why this mapping is used”
+- any phase language (`v0`, `v1`, `v2`)
+- any result or trend language (drift, stability, mitigation)
+
+---
+
+## 5. correspondence to code (one-to-one)
+
+Each section above corresponds to `compute_scores.py`:
+
+- Section 1: `argparse` definitions for `--run_dir`, `--rubric`, `--output`
+- Section 2 (Steps 1–3): filesystem existence checks and `output.parent.mkdir(...)`
+- Section 3: the `summary = {...}` object and `json.dump(...)`
+
+No other behavior is specified in this document.

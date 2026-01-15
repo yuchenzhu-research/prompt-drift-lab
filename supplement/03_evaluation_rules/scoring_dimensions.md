@@ -1,151 +1,112 @@
-# Scoring Dimensions — Authoritative Definitions
+# scoring dimensions
 
-## Purpose
+This file defines the meanings of the **five** scoring fields in each `per_file_scores.scores` record.
 
-This document describes what each scoring dimension measures,
-so that evaluation records can be read and compared consistently.
-
-
-It serves as the **semantic reference** for dimension meanings,
-while all executable scoring rules and validity conditions are defined in
-`eval_protocol.md`.
+- Field names in this file MUST match the JSON fields **character-for-character**.
+- Each dimension MUST be judged **independently** from the others.
+- This file MUST NOT define scoring aggregation, validity gates, or any run-level rules.
 
 ---
 
-## Overview: What the Five Dimensions Represent
+## fields (exact)
 
-- **A_structure (Structural Compliance)**: Whether the three-section structure is actually produced and correctly ordered.
-- **B_snapshot_constraint (Snapshot Constraint)**: Whether the first section follows the Snapshot contract specified for the run.
-- **C_actionability (Actionability of the ChatGPT Instruction)**: Whether the second section functions as an executable retrieval or production task rather than a vague suggestion.
-- **D_completeness (Completeness of the Gemini Deep-Research Instruction)**: Whether the third section simultaneously specifies source-related requirements and structured-output requirements.
-- **E_drift_failure (Drift Control)**: Whether out-of-protocol content appears, such as extra body text, task rewrites, or meta-discussion.
+The judge record MUST use exactly the following five score fields:
 
-> **Structure-First Principle**
->
-> If `A_structure == 0`, then `B`, `C`, `D`, and `E` **must all be 0**.
-> When the structure fails, the remaining dimensions are not meaningfully comparable.
+- `A_structure`
+- `B_snapshot_constraint`
+- `C_actionability`
+- `D_completeness`
+- `E_drift_failure`
 
----
-
-## A_structure: Structural Compliance
-
-### What is evaluated
-
-Whether the model **actually outputs**, in the correct order, the following three sections:
-
-1. `[Fact Snapshot]`
-2. `[ChatGPT Web Search Instruction]`
-3. `[Gemini Deep Research Instruction]`
-
-### Interpretation of 0 / 1 / 2
-
-- **2**: All three sections are present, correctly ordered, and contain substantive content.
-- **1**: The structure is partially present or misordered, but still recognizable as a three-section attempt.
-- **0**: The three-section structure is missing, or section headers appear only in explanations or templates without actual execution.
-
-### Common failure patterns
-
-- Treating the three-section structure as a suggested template without producing the actual sections
-- Producing only one or two sections
-- Heavily rewriting section headers such that the structure becomes unrecognizable
+Each field MUST be scored on `{0,1,2}`.
 
 ---
 
-## B_snapshot_constraint: Snapshot Constraint
+## A_structure — three-section structure compliance
 
-### What is evaluated
+**Judged object:** the presence and order of the required three sections.
 
-Whether the first section (`[Fact Snapshot]`) follows the Snapshot contract
-associated with the current run.
+### observable requirements
+The output MUST contain exactly three top-level sections, in this order:
+1) the Snapshot section
+2) the ChatGPT web-search instruction section
+3) the Gemini deep-research instruction section
 
-The applicable contract is identified by `snapshot_contract_id`
-and defined in `snapshot_contracts.md`.
-It specifies the word limit and whether limited extension or analysis is allowed.
+Section identity MUST be determined by the required section headers defined by the active rules.
 
-### Interpretation of 0 / 1 / 2
-
-- **2**: The Snapshot follows the contract: it respects the word limit and
-  does not include content forbidden by the contract.
-- **1**: The Snapshot is close to the contract boundary
-  (e.g., slightly loose phrasing or borderline extension),
-  but still within the intended constraint.
-- **0**: The Snapshot clearly violates the contract
-  (e.g., exceeds the word limit, or includes analysis when the contract forbids it).
-
-### Boundary reminder
-
-This dimension evaluates compliance with the declared Snapshot contract,
-not whether the Snapshot is informative or well-written.
+### score mapping
+- **2**: All three required section headers are present, appear in the required order, and each section has non-empty content.
+- **1**: The output contains at least two required section headers, but at least one of the following holds: one required header is missing; order is not the required order; or at least one required section is empty.
+- **0**: Fewer than two required section headers are present.
 
 ---
 
-## C_actionability: Actionability of the ChatGPT Web Search Instruction
+## B_snapshot_constraint — snapshot contract compliance
 
-### What is evaluated
+**Judged object:** the Snapshot section only.
 
-Whether the second section functions as an **executable task**:
+### observable requirements
+The Snapshot section MUST satisfy the active Snapshot contract referenced by run metadata (e.g., `snapshot_contract_id`).
 
-- Clearly specifies what to search, how to search, and what to produce
-- Includes at least one **verifiable constraint** (e.g., time range, source type, quantity, or output format)
+Contract checks MUST include (when applicable):
+- required Snapshot header token
+- required body shape (single paragraph; no lists/headings)
+- word limit
+- allowed / forbidden content types stated by the contract
 
-### Interpretation of 0 / 1 / 2
-
-- **2**: Clear steps with at least one hard constraint; the instruction can be copied and executed directly.
-- **1**: Retrieval intent is present, but steps are vague or constraints are weak.
-- **0**: The section is missing or is largely non-executable (e.g., generic advice).
-
-### Common failure patterns
-
-- Stating "please search for relevant information" without specifying queries, scope, or output structure
-- Writing the second section as an answer or explanation rather than an instruction
+### score mapping
+- **2**: All contract checks pass.
+- **1**: The Snapshot violates **at most one** contract check and the violation is bounded (e.g., small word-limit overage or one minor formatting token).
+- **0**: The Snapshot violates **two or more** contract checks, or violates any hard contract check that is marked as a format requirement.
 
 ---
 
-## D_completeness: Completeness of the Gemini Deep Research Instruction
+## C_actionability — ChatGPT web-search instruction executability
 
-### What is evaluated
+**Judged object:** the ChatGPT web-search instruction section only.
 
-Whether the third section specifies **both** of the following requirement types:
+### observable requirements
+The section MUST be an instruction (not an answer) and MUST include all of the following components:
+1) **search target**: at least one explicit query string or keyword set to search for
+2) **constraints**: at least one verifiable constraint (e.g., time window, source type/domain constraint, required count, inclusion/exclusion rule)
+3) **deliverable**: at least one explicit output requirement (e.g., required fields, required format, required number of items)
 
-- **Source-related requirements**: sources, links, timestamps, or source types (at least one)
-- **Structured-output requirements**: tables, comparisons, taxonomies, lists, decision trees, diagrams, etc. (at least one)
-
-### Interpretation of 0 / 1 / 2
-
-- **2**: Both source-related and structured-output requirements are present.
-- **1**: Only one of the two requirement types is present.
-- **0**: The section is missing, or neither requirement type is specified.
-
-### Common failure patterns
-
-- Requesting a deep dive without requiring evidence or sources
-- Asking for conclusions only, without structured outputs
+### score mapping
+- **2**: All three components (1–3) are present.
+- **1**: Exactly two of the three components (1–3) are present.
+- **0**: Zero or one of the three components (1–3) is present, or the section is missing.
 
 ---
 
-## E_drift_failure: Drift Control
+## D_completeness — Gemini deep-research instruction requirements coverage
 
-### What is evaluated
+**Judged object:** the Gemini deep-research instruction section only.
 
-Whether out-of-protocol content appears, such as:
+### observable requirements
+The section MUST contain **both** of the following requirement types:
+1) **evidence requirements**: at least one requirement about sources (e.g., links, citations, timestamps, source types)
+2) **structured-output requirements**: at least one requirement that the output be structured (e.g., table, taxonomy, comparison, checklist, decision tree)
 
-- Appendices, large diagnostic sections, meta-discussion, or rewritten prompt templates outside the three sections
-- Greetings, stances, or conclusion-style responses appearing before the first section
-
-### Interpretation of 0 / 1 / 2
-
-- **2**: The output consists almost exclusively of the three sections, with no obvious boundary violations.
-- **1**: Minor boundary violations (e.g., small amounts of extra text or brief preambles).
-- **0**: Severe boundary violations where out-of-protocol content dominates and the three-section output is no longer primary (often co-occurring with `A_structure = 0`).
-
-### Boundary reminder
-
-Dimension E evaluates **whether drift occurs**, not whether the drifted content is useful.
+### score mapping
+- **2**: Both requirement types (1 and 2) are present.
+- **1**: Exactly one of the two requirement types (1 or 2) is present.
+- **0**: Neither requirement type is present, or the section is missing.
 
 ---
 
-## Relationship to Validity Criteria
+## E_drift_failure — out-of-protocol extra content presence
 
-- `validity_criteria.md` provides **binary boundaries** (Strict Pass / Hard Fail) for rapid screening.
-- This document provides **dimension-level explanations** to clarify the intent behind A–E.
-- Neither document modifies the scoring rules defined in `eval_protocol.md`.
+**Judged object:** text that appears **outside** the three required sections.
+
+### observable requirements
+The output MUST NOT contain additional top-level material outside the three required sections.
+
+Out-of-protocol material includes (non-exhaustive):
+- any preamble before the first required section header
+- any appendix, postscript, or trailing paragraphs after the third required section
+- any additional top-level section beyond the required three
+
+### score mapping
+- **2**: No out-of-protocol material is present (whitespace-only outside sections is allowed).
+- **1**: A single minor out-of-protocol fragment is present (e.g., one short line before the first header or one short trailing line after the third section).
+- **0**: More than one out-of-protocol fragment is present, or any multi-paragraph appendix / additional section is present.

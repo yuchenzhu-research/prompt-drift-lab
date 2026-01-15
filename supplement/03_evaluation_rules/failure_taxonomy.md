@@ -1,124 +1,46 @@
-# Failure Taxonomy — Evaluation Failure Categories
+# failure taxonomy — contract-violation types (labels only)
 
-> Scope
-> - This taxonomy concerns **evaluation execution** and **judge behavior**, not model “quality”.
-> - **Invalid is not the same as a low score**. Low scores can still be valid evaluations.
-> - Scoring dimensions (`A_structure` … `E_drift_failure`) remain **unchanged** and are orthogonal to this taxonomy.
+This file defines **failure labels** as a **classification table of contract violations**.
 
----
-
-## 0) Why a separate taxonomy exists
-
-The project uses two complementary layers:
-
-1. **Scores (A–E)**: what the judge *scored* under the rubric.
-2. **Failure labels (flags)**: why the evaluation is **not reliable / not auditable / not aligned to the protocol**.
-
-Failure labels are used to prevent silent exclusions and to make invalid cases **countable**.
+- Each label answers only: **which contract clause was violated**.
+- Labels MUST be assigned based on observable violations.
+- Labels MUST NOT describe causes, consequences, mitigation, stability, drift, or any trend.
+- Labels MUST NOT reference score values.
+- Multiple labels MAY be assigned to the same record. Label definitions MUST NOT overlap.
 
 ---
 
-## 1) Canonical failure labels
+## 1) label set (exhaustive, non-overlapping)
 
-The following labels appear in the current invalid-evaluation bundles and are treated as **canonical**.
+All labels in this file map to INVALID conditions in `validity_criteria.md`.
 
-### UNPARSABLE_OUTPUT
-**Meaning**: The output cannot be reliably parsed or aligned to the expected structure.
+### table
 
-**Typical signals**
-- Missing required sections / headers
-- Sections merged, reordered, or wrapped in extra dialogue that breaks alignment
-
-**Common co-occurrence**
-- `A_structure = 0`
-
----
-
-### PROTOCOL_VIOLATION
-**Meaning**: The judge does not execute the evaluation contract as specified.
-
-**Typical signals**
-- Role drift (judge turns into advisor / prompt critic / meta-analyst)
-- Outputs content that is “helpful” but outside the required schema
-- Ignores required constraints defined by the Snapshot contract (e.g., word limit or extension policy) while still producing an answer
-
-**Common co-occurrence**
-- High `E_drift_failure`
+| Label | Definition (contract violation) | Contract source |
+|---|---|---|
+| `NOT_STRICT_JSON` | Violates **strict JSON** requirement (output is not a single JSON object). | `validity_criteria.md` §2.1; `eval_protocol.md` §4.1, §5 |
+| `SCHEMA_VALIDATION_FAILURE` | Violates JSON schema validation against `schema/eval_record.schema.json` (missing required fields and/or type mismatch). | `validity_criteria.md` §2.2; `eval_protocol.md` §4.1, §5 |
+| `PER_FILE_MAPPING_VIOLATION` | Violates the **one evaluated file → one `per_file_scores` entry** mapping requirement. | `validity_criteria.md` §2.3; `eval_protocol.md` §4.2 |
+| `FILE_NAME_NOT_VERBATIM` | Violates **file name preservation** requirement (not preserved character-for-character). | `validity_criteria.md` §2.4; `eval_protocol.md` §4.3 |
+| `SNAPSHOT_BLOCK_MALFORMED` | Violates Snapshot block **required order/count** (must start with exactly one Snapshot block; must contain exactly one header line and one body paragraph). | `validity_criteria.md` §2.5; `snapshot_contracts.md` §1 |
+| `SNAPSHOT_HEADER_MISMATCH` | Violates Snapshot header token requirement (header is not exactly one of the permitted strings). | `validity_criteria.md` §2.6; `snapshot_contracts.md` §1.2 |
+| `SNAPSHOT_BODY_SHAPE_VIOLATION` | Violates Snapshot body **shape** requirement (not one paragraph and/or contains list markers/headings and/or starts a new top-level section). | `validity_criteria.md` §2.7; `snapshot_contracts.md` §1.3, §3.2 |
+| `SNAPSHOT_WORD_LIMIT_VIOLATION` | Violates Snapshot **word limit** requirement of the active `snapshot_contract_id`. | `validity_criteria.md` §2.8; `snapshot_contracts.md` §3.1 |
+| `SNAPSHOT_PROHIBITED_CONTENT_TYPE` | Violates Snapshot **content-type** requirement of the active `snapshot_contract_id` (contains a forbidden content type). | `validity_criteria.md` §2.9; `snapshot_contracts.md` §2 |
+| `EXTRA_TOP_LEVEL_CONTENT` | Violates **no extra top-level content** requirement (preamble, appendix, trailing paragraphs, or extra top-level section outside the required three sections). | `validity_criteria.md` §2.10; `eval_protocol.md` §3.2, §4.1 |
 
 ---
 
-### CONTEXT_MISALIGNMENT
-**Meaning**: The evaluation response is not aligned with the target file/task context (wrong target, wrong prompt variant, or mismatched interpretation).
+## 2) assignment rules (deterministic)
 
-**Typical signals**
-- Evaluates a different task than the one defined in the file
-- Responds to the prompt itself rather than evaluating the model output
-
----
-
-### INTERNAL_INCONSISTENCY
-**Meaning**: The record is internally contradictory and cannot be audited as a coherent evaluation.
-
-**Typical signals**
-- Notes/evidence contradict the assigned scores
-- Claims compliance while evidence shows violation
+- A label MUST be assigned if and only if its definition in Section 1 is satisfied.
+- If multiple definitions are satisfied, multiple labels MUST be assigned.
+- No label in this file SHALL be used as a catch-all.
 
 ---
 
-### INCOMPLETE_COVERAGE
-**Meaning**: The output is truncated or only partially addresses the required evaluation sections.
+## 3) recording format (recommended)
 
-**Typical signals**
-- Stops mid-output
-- Only one section produced
-
----
-
-### SELF_JUDGING_BIAS
-**Meaning**: The judge evaluates its *own* model outputs (or is otherwise conflicted), making the result unsuitable for cross-model comparison.
-
-**Notes**
-- This is not a “format” failure; it is a **validity** failure.
-- Keep the record for transparency, but exclude it from cross-model aggregate claims.
-
----
-
-## 2) Relation to the “Invalid Case Taxonomy” in `invalid_report.md`
-
-The illustrative report groups invalid cases into A–E categories. These categories are **narrative groupings**, while the labels above are **machine-countable flags**.
-
-A practical mapping:
-
-- Report **A. Schema / Format Violation** → `UNPARSABLE_OUTPUT`
-- Report **B. Instruction Deviation** → `PROTOCOL_VIOLATION`
-- Report **C. Semantic / Inconsistency** → `INTERNAL_INCONSISTENCY` or `CONTEXT_MISALIGNMENT`
-- Report **D. Partial / Truncation** → `INCOMPLETE_COVERAGE`
-- Report **E. File-Level Corruption** → *(reserved; only use if a file is corrupted on disk)*
-
----
-
-## 3) How to record failures
-
-### Where to store
-- **Bundle-level**: `flags` (already used in the existing JSON bundles)
-- **File-level**: include a short, standardized prefix in `notes`
-
-Example (file-level `notes`):
-
-- `Flags: [PROTOCOL_VIOLATION] — role drift into prompt critique; missing three-section structure.`
-
-### Evidence expectation
-If a failure label is assigned, include at least one short supporting excerpt in `evidence` (or reference the exact section) so the exclusion is auditable.
-
----
-
-## 4) Reporting template
-
-When summarizing a run (or a bundle), report failures separately from scores:
-
-- Total evaluated: N
-- Valid: N_valid
-- Invalid: N_invalid
-- Failure breakdown: {UNPARSABLE_OUTPUT: x, PROTOCOL_VIOLATION: y, …}
-
-This is sufficient for reviewers to audit exclusion rules and understand brittleness patterns.
+When storing failure labels in a judge record:
+- store labels as an array of strings (e.g., `flags: ["SNAPSHOT_WORD_LIMIT_VIOLATION", "EXTRA_TOP_LEVEL_CONTENT"]`)
+- if evidence is stored, it SHALL include a short excerpt that directly shows the violating text span or missing structure

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://prompt-drift-lab/schema/eval_record.json",
-  "title": "Prompt Drift Lab - Eval Record",
+  "title": "Prompt Drift Lab - Eval Record (Structure Only)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,179 +15,131 @@
     "prompt_version",
     "length_variant",
     "instruction_variant",
-    "metrics"
+    "per_file_scores"
   ],
   "properties": {
     "eval_id": {
       "type": "string",
-      "description": "Unique identifier for this evaluation record (timestamp or hash)."
+      "description": "Evaluation record identifier."
     },
     "run_id": {
       "type": "string",
-      "description": "Identifier of the generation run being evaluated."
+      "description": "Run identifier."
     },
     "created_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "Evaluation creation time in ISO 8601."
+      "description": "Creation timestamp as a string."
     },
     "protocol_version": {
       "type": "string",
-      "description": "Identifier of the evaluation protocol used for this record (see supplement/03_evaluation_rules/EVAL_PROTOCOL.md)."
+      "description": "Protocol identifier as a string."
     },
     "judge_prompt_version": {
       "type": "string",
-      "description": "Optional: version tag/name of the judge prompt."
+      "description": "Judge prompt version tag as a string."
     },
     "judge_model": {
       "type": "string",
-      "description": "Model used as judge (e.g., gemini/chatgpt/claude)."
+      "description": "Judge model identifier as a string."
     },
     "generator_model": {
       "type": "string",
-      "description": "Model whose output is being evaluated."
+      "description": "Generator model identifier as a string."
     },
     "question_id": {
       "type": "string",
-      "pattern": "^q[1-9][0-9]*$",
-      "description": "Question identifier (q1, q2, ...)."
+      "description": "Question identifier as a string."
     },
     "prompt_version": {
       "type": "string",
-      "enum": [
-        "prompt_a",
-        "prompt_b"
-      ],
-      "description": "Prompt version used during generation."
+      "description": "Prompt version identifier as a string."
     },
     "length_variant": {
       "type": "string",
-      "enum": [
-        "short",
-        "long"
-      ],
-      "description": "Length variant of the prompt setting."
+      "description": "Length variant identifier as a string."
     },
     "instruction_variant": {
       "type": "string",
-      "enum": [
-        "explicit",
-        "implicit"
-      ],
-      "description": "Instruction style variant."
+      "description": "Instruction variant identifier as a string."
     },
     "source_artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "path"
-      ],
+      "required": ["type", "path"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "pdf",
-            "md",
-            "txt",
-            "json"
-          ],
-          "description": "Artifact type of the generator output."
+          "description": "Artifact type as a string."
         },
         "path": {
           "type": "string",
-          "description": "Repo-relative or filesystem path to the artifact."
+          "description": "Artifact path as a string."
         },
         "sha256": {
           "type": "string",
-          "description": "Optional checksum for integrity."
+          "description": "Checksum as a string."
         }
       },
-      "description": "Pointer to the evaluated artifact (e.g., a PDF)."
+      "description": "Pointer to an evaluated artifact."
     },
-    "metrics": {
-      "type": "object",
-      "description": "Metric scores and evidence. Metric keys follow the canonical definitions in supplement/01_experiment_design/terminology_alignment_ZH.md.",
-      "additionalProperties": {
-        "$ref": "#/definitions/metric_result"
-      }
-    },
-    "overall": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "score": {
-          "type": "number",
-          "minimum": 0
-        },
-        "max_score": {
-          "type": "number",
-          "minimum": 0
-        },
-        "summary": {
-          "type": "string"
-        }
-      },
-      "description": "Optional overall score/summary."
-    },
-    "evidence_snippets": {
+
+    "per_file_scores": {
       "type": "array",
-      "items": {
-        "$ref": "#/definitions/evidence_snippet"
-      },
-      "description": "Optional: extracted snippets supporting key judgments."
+      "description": "Per-file evaluation entries.",
+      "items": { "$ref": "#/$defs/per_file_score" }
     },
-    "notes": {
-      "type": "string",
-      "description": "Optional free-form notes."
+
+    "bundle_meta": {
+      "type": "object",
+      "description": "Optional metadata object.",
+      "additionalProperties": true
     }
   },
-  "definitions": {
-    "metric_result": {
+
+  "$defs": {
+    "per_file_score": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "score"
-      ],
+      "required": ["file", "scores"],
       "properties": {
-        "score": {
-          "type": "number",
-          "description": "Metric score (scale defined by the rubric)."
-        },
-        "max_score": {
-          "type": "number",
-          "description": "Optional: maximum score for this metric."
-        },
-        "label": {
+        "file": {
           "type": "string",
-          "description": "Optional short label, e.g., PASS/FAIL or A/B/C."
+          "description": "Evaluated file identifier as a string."
         },
-        "rationale": {
-          "type": "string",
-          "description": "Short reasoning for the score."
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "A_structure",
+            "B_snapshot_constraint",
+            "C_actionability",
+            "D_completeness",
+            "E_drift_failure"
+          ],
+          "properties": {
+            "A_structure": { "type": "number" },
+            "B_snapshot_constraint": { "type": "number" },
+            "C_actionability": { "type": "number" },
+            "D_completeness": { "type": "number" },
+            "E_drift_failure": { "type": "number" }
+          },
+          "description": "Score fields (numbers only)."
+        },
+        "total": {
+          "type": "number",
+          "description": "Optional total score as a number."
         },
         "evidence": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/evidence_snippet"
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "A_structure": { "type": "string" },
+            "B_snapshot_constraint": { "type": "string" },
+            "C_actionability": { "type": "string" },
+            "D_completeness": { "type": "string" },
+            "E_drift_failure": { "type": "string" }
           },
-          "description": "Evidence snippets supporting this metric."
-        }
-      }
-    },
-    "evidence_snippet": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "text"
-      ],
-      "properties": {
-        "text": {
-          "type": "string"
-        },
-        "location": {
-          "type": "string",
-          "description": "Optional pointer: page/section/line range, if available."
+          "description": "Optional evidence strings."
         }
       }
     }
