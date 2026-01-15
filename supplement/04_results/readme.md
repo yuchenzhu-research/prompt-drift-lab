@@ -1,113 +1,88 @@
-# 04 Results — Overview
+# 04_results — Artifact Map (no rules, no code)
 
-This directory contains **all concrete experiment artifacts** produced by executing the evaluation pipeline.
-It serves as the **single authoritative index** of result files used for analysis and reporting.
+This directory is a **data map** of realized artifacts produced by the evaluation pipeline.
+It is an index of files and their roles.
 
-**Data flow:**
-
-raw model outputs → structured evaluations → aggregated analysis
-
-Raw model outputs are collected under `01_raw_model_outputs/`, evaluated into structured judgment records under `02_cross_model_evaluation/`, and summarized via aggregated tables derived **exclusively from valid evaluations**.
+- **No evaluation rules** are defined here.
+- **No processing code** is stored here.
 
 ---
 
-## Scope and Guarantees
+## One-way data flow (3 layers)
 
-- This directory contains **only realized artifacts** produced by the experiment.
-- No results are inferred, reconstructed, or implied beyond the files present here.
-- All reported statistics in the paper trace back to files listed in this directory.
+1) **Raw model outputs** → `01_raw_model_outputs/` (`*.pdf`)
+2) **Raw judge evaluations** → `02_raw_judge_evaluations/` (judge bundles + prompt text + `run_meta.json`)
+3) **Processed evaluations** → `03_processed_evaluations/` (per-record JSON + summary tables)
 
-Invalid evaluations are retained for **auditability and diagnostic purposes only** and are excluded from all quantitative aggregation.
-
----
-
-## File Naming Conventions
-
-Files and subdirectories under `04_results/` follow fixed, rule-based **naming conventions**.
-
-In explanatory text, schematic expressions such as `{model}`, `{judge}`, or `<generator_model>` are used **only to describe variable components** of these naming patterns. They do **not** refer to literal filenames or directories that must exist verbatim.
-
-All concrete result files are explicitly present in the directory tree below.
+This pipeline is **one-way**: raw artifacts are preserved, and downstream artifacts remain traceable to upstream files.
 
 ---
 
-## 0) 30-second navigation
+## diagnostic vs final (raw judge evaluations)
 
-### 1) Top-line summary (CSV)
+`02_raw_judge_evaluations/` is split by label:
 
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/summary.csv`
+- `diagnostic/`: exploratory runs retained **only for diagnostic reference** (not used for final claims)
+- `final/`: runs used for reported results and downstream aggregation
 
-This file is the **single entry point** for all quantitative results reported in the paper.
+Judge-run directories (examples):
 
----
-
-### 2) Breakdown tables (CSV)
-
-**Main method (cross-model judging):**
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/main_method_by_generator.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/main_method_by_variant.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/main_method_by_question.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/main_method_by_question_variant.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/main_method_inter_judge_agreement.csv`
-
-**Supporting method (self-evaluation sanity check):**
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/supporting_method_by_generator.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/supporting_method_by_variant.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/supporting_method_by_question.csv`
-- `04_results/02_cross_model_evaluation/valid_evaluations/summary_tables/supporting_method_by_question_variant.csv`
+- `diagnostic/v0_baseline_judge/`
+- `final/v1_paraphrase_judge/`
+- `final/v2_schema_strict_judge/`
 
 ---
 
-### 3) Judged evaluation records (JSON)
+## Non-scope (what is NOT defined here)
 
-**Valid evaluations (used for all aggregation):**
-- Main method (cross-model judging):
-  - `04_results/02_cross_model_evaluation/valid_evaluations/main_method_cross_model/`
-- Supporting method (self-evaluation sanity check):
-  - `04_results/02_cross_model_evaluation/valid_evaluations/supporting_method_self_eval/`
-
-**Invalid evaluations (excluded from all statistics):**
-- `04_results/02_cross_model_evaluation/invalid_evaluations/`
-
-Invalid evaluations are preserved **only for auditability and failure-mode diagnosis**.
+- **Evaluation rules / validity definitions** live in `supplement/03_evaluation_rules/`.
+- **Deterministic processing scripts** live under `tools/`.
 
 ---
 
-### 4) Raw model outputs (PDF)
+## Entry points (where to start)
 
-- `04_results/01_raw_model_outputs/<generator_model>/`
+**Processed summary tables (CSV) — primary reporting inputs**
+- `03_processed_evaluations/*/summary_tables/scores_grouped.csv`
+- `03_processed_evaluations/*/summary_tables/scores_long.csv`
+- `03_processed_evaluations/*/summary_tables/run_meta.json`
+- `03_processed_evaluations/v2_schema_strict_judge/summary_tables/excluded_records.jsonl`
 
-Here, `<generator_model>` denotes the generator model name as part of the directory naming convention, not a literal placeholder.
+**Processed per-record JSON — audit trail**
+- `03_processed_evaluations/*/valid_evaluations/**/record_*.json`
+
+**Raw judge bundles — preserved inputs to processing**
+- `02_raw_judge_evaluations/{diagnostic|final}/*/judge_*_bundle_*.json`
+
+**Raw model outputs (PDF) — immutable generation snapshot**
+- `01_raw_model_outputs/<generator_model>/*.pdf`
+
+**Analysis note**
+- `03_results_analysis.md` (describes grouping/aggregation rules; does not define evaluation rules)
 
 ---
 
-## Directory map
+## Directory map (shape only)
 
 ```
 04_results/
 ├── 01_raw_model_outputs/
-│   ├── anthropic_claude-sonnet-4.5_extended-thinking/
-│   │   └── *.pdf
-│   ├── google_gemini-3-pro/
-│   │   └── *.pdf
-│   └── openai_gpt-5.2_extended-thinking/
-│       └── *.pdf
+│   ├── anthropic_claude-sonnet-4.5_extended-thinking/   (*.pdf)
+│   ├── google_gemini-3-pro/                             (*.pdf)
+│   └── openai_gpt-5.2_extended-thinking/                (*.pdf)
 │
-├── 02_cross_model_evaluation/
-│   ├── valid_evaluations/
-│   │   ├── main_method_cross_model/
-│   │   ├── supporting_method_self_eval/
-│   │   └── summary_tables/
-│   │
-│   └── invalid_evaluations/
-│       ├── case_study_implicit_role_drift.md
-│       ├── readme.md
-│       ├── invalid_report.md
-│       ├── main_method_cross_model/
-│       └── supporting_method_self_eval/
+├── 02_raw_judge_evaluations/
+│   ├── diagnostic/
+│   │   └── v0_baseline_judge/                           (judge bundles + prompt text + run_meta.json)
+│   └── final/
+│       ├── v1_paraphrase_judge/                         (judge bundles + prompt text + run_meta.json)
+│       └── v2_schema_strict_judge/                      (judge bundles + prompt text + run_meta.json)
+│
+├── 03_processed_evaluations/
+│   ├── v0_baseline_judge/                               (diagnostic outputs)
+│   ├── v1_paraphrase_judge/                             (final outputs)
+│   └── v2_schema_strict_judge/                          (final outputs)
 │
 ├── 03_results_analysis.md
 └── readme.md
 ```
-
-Angle-bracketed or brace-delimited terms indicate naming conventions rather than literal file or directory names.

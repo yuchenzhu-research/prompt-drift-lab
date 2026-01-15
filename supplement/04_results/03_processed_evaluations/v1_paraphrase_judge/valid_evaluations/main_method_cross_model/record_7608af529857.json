@@ -1,0 +1,32 @@
+{
+  "judge_version": "v1_paraphrase_judge",
+  "method": "cross_model",
+  "source_bundle": "judge_gemini_bundle_chatgpt.json",
+  "bundle_meta": {
+    "total_files": 16,
+    "evaluated_at": "2026-01-14",
+    "judge_role": "Strict Research-grade LLM-as-Judge"
+  },
+  "judge_model": "gemini",
+  "generator_model": "chatgpt",
+  "file": "q4_baseline_explicit.pdf",
+  "question_id": "q4",
+  "prompt_variant": "baseline",
+  "trigger_type": "explicit",
+  "scores": {
+    "A_structure": 2,
+    "B_snapshot_constraint": 2,
+    "C_actionability": 2,
+    "D_completeness": 2,
+    "E_drift_failure": 0
+  },
+  "total": null,
+  "evidence": {
+    "A_structure": "三段式结构满足",
+    "B_snapshot_constraint": "长提示词不保证遵循率 [cite: 157]",
+    "C_actionability": "要求证据地图与检索基准 [cite: 161]",
+    "D_completeness": "覆盖研究计划与实验设计 [cite: 165]",
+    "E_drift_failure": "任务执行准确"
+  },
+  "notes": null
+}

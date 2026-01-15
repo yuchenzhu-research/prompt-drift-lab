@@ -1,0 +1,33 @@
+{
+  "judge_version": "v1_paraphrase_judge",
+  "method": "cross_model",
+  "source_bundle": "judge_chatgpt_bundle_gemini.json",
+  "bundle_meta": {
+    "judge_role": "LLM-as-Judge (realigned to analysis-allowed snapshot)",
+    "n_files": 16,
+    "evaluation_note": "150字内分析性摘要允许；仍严格三段式",
+    "file_name_usage": "alignment only"
+  },
+  "judge_model": "chatgpt",
+  "generator_model": "gemini",
+  "file": "google_gemini-3-pro/q3_long_implicit.pdf",
+  "question_id": "q3",
+  "prompt_variant": "long",
+  "trigger_type": "implicit",
+  "scores": {
+    "A_structure": 2,
+    "B_snapshot_constraint": 1,
+    "C_actionability": 2,
+    "D_completeness": 2,
+    "E_drift_failure": 1
+  },
+  "total": 8,
+  "evidence": {
+    "A_structure": "一、 现象",
+    "B_snapshot_constraint": "详细展开",
+    "C_actionability": "撰写",
+    "D_completeness": "归因分析",
+    "E_drift_failure": "长文本"
+  },
+  "notes": "长度驱动漂移"
+}
