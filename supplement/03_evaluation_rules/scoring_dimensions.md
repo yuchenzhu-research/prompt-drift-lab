@@ -2,8 +2,9 @@
 
 ## Purpose
 
-This document explains **what each scoring dimension is intended to measure**
-so that evaluation records can be interpreted consistently and audited reliably.
+This document describes what each scoring dimension measures,
+so that evaluation records can be read and compared consistently.
+
 
 It serves as the **semantic reference** for dimension meanings,
 while all executable scoring rules and validity conditions are defined in
@@ -14,7 +15,7 @@ while all executable scoring rules and validity conditions are defined in
 ## Overview: What the Five Dimensions Represent
 
 - **A_structure (Structural Compliance)**: Whether the three-section structure is actually produced and correctly ordered.
-- **B_snapshot_constraint (Snapshot Constraint)**: Whether the first section is short and purely descriptive, without analysis.
+- **B_snapshot_constraint (Snapshot Constraint)**: Whether the first section follows the Snapshot contract specified for the run.
 - **C_actionability (Actionability of the ChatGPT Instruction)**: Whether the second section functions as an executable retrieval or production task rather than a vague suggestion.
 - **D_completeness (Completeness of the Gemini Deep-Research Instruction)**: Whether the third section simultaneously specifies source-related requirements and structured-output requirements.
 - **E_drift_failure (Drift Control)**: Whether out-of-protocol content appears, such as extra body text, task rewrites, or meta-discussion.
@@ -50,24 +51,31 @@ Whether the model **actually outputs**, in the correct order, the following thre
 
 ---
 
-## B_snapshot_constraint: Fact Snapshot Constraint
+## B_snapshot_constraint: Snapshot Constraint
 
 ### What is evaluated
 
-Whether the first section (`[Fact Snapshot]`) satisfies the following constraints:
+Whether the first section (`[Fact Snapshot]`) follows the Snapshot contract
+associated with the current run.
 
-- Approximately **≤ 50 characters** (whitespace-stripped character count may be used as an approximation)
-- **Purely descriptive**: states phenomena or conclusions without causes, mechanisms, or recommendations
+The applicable contract is identified by `snapshot_contract_id`
+and defined in `snapshot_contracts.md`.
+It specifies the word limit and whether limited extension or analysis is allowed.
 
 ### Interpretation of 0 / 1 / 2
 
-- **2**: Length is within range and the tone is purely descriptive, with no analytical expansion.
-- **1**: Slightly exceeds the length limit or includes minor analytical or explanatory elements.
-- **0**: The section is missing, or is clearly written as an analysis or long-form summary.
+- **2**: The Snapshot follows the contract: it respects the word limit and
+  does not include content forbidden by the contract.
+- **1**: The Snapshot is close to the contract boundary
+  (e.g., slightly loose phrasing or borderline extension),
+  but still within the intended constraint.
+- **0**: The Snapshot clearly violates the contract
+  (e.g., exceeds the word limit, or includes analysis when the contract forbids it).
 
 ### Boundary reminder
 
-A snapshot is not an abstract or review section; it should not include multiple sources, citations, or reasoning chains.
+This dimension evaluates compliance with the declared Snapshot contract,
+not whether the Snapshot is informative or well-written.
 
 ---
 

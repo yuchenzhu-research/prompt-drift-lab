@@ -1,92 +1,67 @@
-# Compute Scores — Explanatory Note
+# compute scores — explanatory note
 
-## File Role and Scope
+## file role and scope
 
-This file provides a **conceptual explanation** of the scoring and aggregation logic
-originally implemented in `compute_scores.py`.
+This file explains the scoring and aggregation logic at a conceptual level.
 
-- This document is **not executable**
-- It is **not** an entry point for evaluation or aggregation
-- It does **not** define or modify any evaluation rules or JSON contracts
+- It is not executable.
+- It is not an entry point for evaluation or aggregation.
+- It does not define, override, or reinterpret any evaluation rules or JSON contracts.
 
-All quantitative results reported in the paper and supplements are **pre-computed and fixed** in:
+All quantitative results referenced by the paper and supplements are pre-computed and stored under:
 
 ```
 supplement/04_results/03_processed_evaluations/
 ```
 
-Reviewers are **not expected** to run any scoring scripts to audit the artifact.
+Reviewers are not expected to run any scripts to audit this artifact.
 
 ---
 
-## Relationship to the Execution Pipeline
+## how this relates to the pipeline
 
-- **`tools/reproduce_valid_evaluations.py`**
-  - The **only authoritative execution entry point** for evaluation processing
-  - Performs schema validation, validity filtering, and score aggregation
+- `tools/reproduce_valid_evaluations.py`
+  - The only script used in the reproducible processing pipeline
+  - Performs schema validation, validity screening, and aggregation
 
-- **`compute_scores.py`**
-  - **Deprecated**
-  - Retained solely for archival inspection of legacy scoring logic
-  - Not invoked by the final reproducible pipeline
+- `compute_scores.py`
+  - Deprecated
+  - Kept for inspection of legacy logic only
+  - Not used to produce the final result tables
 
-- **`compute_scores.md` (this file)**
-  - A **human-readable explanation** of the scoring design and intent
-  - Introduces **no alternative execution paths**
+This file exists to make the aggregation logic easier to read without treating it as a second specification.
 
-In case of any discrepancy, the behavior of **`tools/reproduce_valid_evaluations.py`** takes precedence.
+If there is any mismatch between this note and the code path used for reproduction, follow:
 
----
-
-## Design Principles
-
-The scoring logic follows three guiding principles:
-
-1. **Analysis-level reproducibility**  
-   Fixed result files, scoring rules, and summary tables are mutually consistent.
-
-2. **Determinism**  
-   No external APIs, online services, or non-deterministic components are involved.
-
-3. **Auditability over executability**  
-   Scripts exist to support transparency and inspection, not to reproduce experiments.
+- `tools/reproduce_valid_evaluations.py`
 
 ---
 
-## Conceptual Scoring Flow
+## what gets aggregated
 
-At a high level, the scoring and aggregation process consists of:
+Inputs:
+- schema-valid evaluation records
+- the scoring dimensions defined in `scoring_dimensions.md`
+- the protocol constraints defined in `eval_protocol.md`
 
-1. **Inputs**  
-   - Schema-valid evaluation records  
-   - A fixed scoring rubric defined by the evaluation rules
+Processing steps (conceptual):
+1. validate JSON schema conformance
+2. apply binary validity screening (see `validity_criteria.md`)
+3. aggregate per-record scores according to the rubric
+4. write fixed summary tables under:
+   `supplement/04_results/03_processed_evaluations/`
 
-2. **Validation**  
-   - Schema conformance checks  
-   - Presence and completeness checks for required fields
-
-3. **Aggregation**  
-   - Per-record aggregation according to the rubric  
-   - Collapsing multiple judge scores into a single aggregated score per evaluated output
-
-4. **Outputs**  
-   - Structured summary files stored under:
-     ```
-     supplement/04_results/03_processed_evaluations/
-     ```
-
-This document intentionally avoids implementation details to prevent
-any interpretation as a secondary execution specification.
+This note intentionally avoids implementation details.
 
 ---
 
-## Safety and Boundary Statements
+## boundary statements
 
-- This document does **not** provide runnable code
-- It does **not** claim end-to-end reproducibility
-- It must **not** be used to generate or modify experimental results
+- This file does not provide runnable code.
+- It does not claim to reproduce model generations.
+- It should not be used to regenerate or modify any reported results.
 
-All reported results originate exclusively from:
+All reported results originate from the fixed files under:
 
 ```
 supplement/04_results/03_processed_evaluations/
@@ -94,25 +69,18 @@ supplement/04_results/03_processed_evaluations/
 
 ---
 
-## Reviewer Reading Guide
+## reviewer reading guide
 
-To audit the evaluation logic, reviewers may:
+To audit the evaluation logic:
+1. read `eval_protocol.md`
+2. read `scoring_dimensions.md`
+3. inspect the fixed result files in `supplement/04_results/`
 
-1. Read `eval_protocol.md`
-2. Read `scoring_dimensions.md`
-3. Inspect the fixed result files in `supplement/04_results/`
-
-No script execution is required for consistency or validity checks.
+No script execution is required for consistency checks.
 
 ---
 
-## Closing Note
+## closing note
 
-The purpose of this file is to **reduce cognitive overhead**, not to define behavior.
-
-It functions as:
-- Design rationale
-- Audit annotation
-- Engineering commentary
-
-and **not** as an experimental component.
+This file is here to reduce reading overhead.
+It is a short design note, not a component of the experiment.

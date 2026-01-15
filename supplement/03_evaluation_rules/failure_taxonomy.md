@@ -2,7 +2,7 @@
 
 > Scope
 > - This taxonomy concerns **evaluation execution** and **judge behavior**, not model “quality”.
-> - **Invalid ≠ low score**. Low scores can be valid evaluations.
+> - **Invalid is not the same as a low score**. Low scores can still be valid evaluations.
 > - Scoring dimensions (`A_structure` … `E_drift_failure`) remain **unchanged** and are orthogonal to this taxonomy.
 
 ---
@@ -40,7 +40,7 @@ The following labels appear in the current invalid-evaluation bundles and are tr
 **Typical signals**
 - Role drift (judge turns into advisor / prompt critic / meta-analyst)
 - Outputs content that is “helpful” but outside the required schema
-- Ignores required constraints (e.g., length / descriptive-only snapshot) while still producing an answer
+- Ignores required constraints defined by the Snapshot contract (e.g., word limit or extension policy) while still producing an answer
 
 **Common co-occurrence**
 - High `E_drift_failure`

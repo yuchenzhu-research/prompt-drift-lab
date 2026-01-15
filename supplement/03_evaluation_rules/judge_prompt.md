@@ -12,7 +12,7 @@ You are a strict evaluator (**judge**). Your objectives are:
 
 - `schema/eval_record.schema.json`
 
-The JSON schema is the **sole authoritative definition** of field presence, structure, and types.
+The JSON schema defines the required fields and types. This prompt only describes how to fill them.
 This prompt provides execution instructions only and does **not** redefine the JSON contract.
 
 ---
@@ -103,8 +103,8 @@ For each dimension `d` in `rubric.dimensions`:
 
 If the evidence is insufficient or ambiguous:
 
-- Assign the most conservative score.
-- Record the uncertainty explicitly in `notes`.
+- Choose the conservative score.
+- Use `notes` to state what evidence is missing.
 
 ---
 

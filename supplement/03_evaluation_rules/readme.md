@@ -1,92 +1,72 @@
-# 03 Evaluation Rules
+# 03 evaluation rules
 
-This directory defines the **evaluation-side contract** of the project.
-It specifies **what is evaluated**, **how validity is determined**, and **how scores are defined and aggregated**.
+This directory defines the evaluation-side contract for the project:
+what the judge must output, what counts as valid, and how scores are interpreted.
 
-This directory is **rule-defining only**. It is **not** an execution or reproduction entry point.
-
----
-
-## Authority Contract
-
-The English-language files in this directory constitute the **sole authoritative evaluation contract**.
-
-Each component document defines a distinct, non-overlapping aspect of the evaluation rules:
-
-- `eval_protocol.md` — overall evaluation flow and rule composition
-- `validity_criteria.md` — binary structural validity boundaries
-- `scoring_dimensions.md` — scoring dimensions and scales
-- `judge_prompt.md` — judge input/output contract
-- `failure_taxonomy.md` — classification of evaluation failures
-- `schema/` — machine-enforceable JSON schema for judge outputs
-
-No other documents define, override, or extend evaluation authority.
+This is rule documentation. It is not where results are produced.
 
 ---
 
-## Reference Implementation (Non-executable)
+## where to start
 
-### `compute_scores.py`
-
-`compute_scores.py` provides a **reference implementation** of the scoring and aggregation logic
-specified by the evaluation rules in this directory.
-
-It is included **for transparency and auditability only**.
-
-**Important clarifications:**
-- This file is **deprecated** and **not** an executable reproduction script
-- Reviewers are **not expected** to run this file
-- No numerical results are regenerated from this file
-
-All authoritative behavior is defined by the rule documents and schemas listed above.
-
-### `compute_scores.md`
-
-This document provides a **human-readable explanation** of the aggregation logic
-originally implemented in `compute_scores.py`.
-
-It serves purely as explanatory material and introduces **no alternative execution path**.
+1. `eval_protocol.md` — how evaluation records are screened and used
+2. `judge_prompt.md` — what the judge is asked to do and what JSON it must return
+3. `schema/` — the JSON schema enforced for judge outputs
+4. `snapshot_contracts.md` — the Snapshot contract variants (50 vs 150, extension policy)
+5. `scoring_dimensions.md` — what each score dimension means
+6. `validity_criteria.md` — a binary structural screen (pass/fail)
+7. `failure_taxonomy.md` — why an evaluation record is treated as invalid
 
 ---
 
-## File Responsibilities
+## what each file is for
 
-### Evaluation protocol
 - `eval_protocol.md`
+  - evaluation flow and validity screening
+  - references `snapshot_contracts.md` for Snapshot rules
 
-### Validity criteria
-- `validity_criteria.md`
-
-### Scoring dimensions
-- `scoring_dimensions.md`
-
-### Judge contract
 - `judge_prompt.md`
+  - judge instructions and strict JSON-only output requirement
+  - defers field definitions to the schema
 
-### Failure handling
-- `failure_taxonomy.md`
-
-### Score aggregation (reference only)
-- `compute_scores.py`
-- `compute_scores.md`
-
-### Schema (authoritative)
 - `schema/`
+  - machine-enforced structure for judge outputs
+
+- `snapshot_contracts.md`
+  - Snapshot contract matrix used in this repo
+  - binds prompt variants and judge runs to a contract id
+
+- `scoring_dimensions.md`
+  - definitions for A–E (what each dimension measures)
+
+- `validity_criteria.md`
+  - a fast pass/fail screen for structural validity
+  - Snapshot is checked against the contract declared for the run
+
+- `failure_taxonomy.md`
+  - failure labels used to make invalid cases countable and auditable
 
 ---
 
-## Results and Execution Artifacts
+## about score aggregation
 
-This directory defines **rules and reference logic only**.
-
-All execution artifacts and fixed results are stored under:
+- `compute_scores.py` and `compute_scores.md` are kept for inspection only.
+- the processed tables used by the paper are already stored as fixed files under:
 
 ```
-supplement/04_results/
+supplement/04_results/03_processed_evaluations/
 ```
 
-Executable reproduction is provided **exclusively** via:
+If you want to trace how valid records are collected and aggregated, follow the reproduction entry point:
 
 ```
 supplement/tools/reproduce_valid_evaluations.py
 ```
+
+---
+
+## note on conflicts
+
+- JSON structure questions: follow `schema/`.
+- Snapshot wording differences: follow `snapshot_contracts.md`.
+- validity vs scoring: `validity_criteria.md` is pass/fail, `scoring_dimensions.md` explains A–E.
