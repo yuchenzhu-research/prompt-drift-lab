@@ -17,7 +17,7 @@
 # 结构硬性要求（三段式，缺一即失败）
 （与 baseline 完全一致）
 
-1. 150 字以内简答
+1. ≤150字简答：可解释原因（engineering-oriented），但不得给建议或行动方案；超过150字视为违规
 2. ChatGPT-5.2 with web searching 提示词
 3. Gemini-3-Pro Deep Research 提示词
 
