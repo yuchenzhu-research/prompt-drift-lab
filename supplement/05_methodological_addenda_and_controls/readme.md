@@ -1,31 +1,27 @@
 # 05 Methodological Addenda and Controls
 
-This directory contains **methodological addenda** that support the interpretation
-of reported results by clarifying design rationale, control assumptions, and
-comparison boundaries. These materials are intentionally separated from the main
-experimental protocol to preserve a clean measurement interface while allowing
-failure-oriented reasoning to be made explicit.
+This directory contains **supplemental, non-normative methodological notes** provided **for transparency only**.
+It clarifies already-frozen design rationale, control assumptions, and comparison boundaries.
 
-The documents in this directory do **not** introduce new experimental results and
-do **not** modify evaluation protocols, scoring rules, or reported aggregates.
-They provide methodological context that is necessary to correctly interpret
-observed behaviors, particularly in the presence of systematic failures.
+**Scope guardrails (read first):**
+- **No new experiments, runs, prompts, variables, or evaluation dimensions** are introduced here.
+- These notes are **not used to compute, select, or modify** any reported results, scores, or aggregates.
+- These notes **do not change** the frozen execution protocol, evaluation rules, or output schemas defined elsewhere.
+- If any wording here appears inconsistent with the frozen protocol/results, the frozen protocol/results **take precedence**.
+
+The notes are kept separate so the **measurement interface remains unchanged**, while the study’s design intent and comparison boundaries are made explicit.
 
 ---
 
 ## Role in the Paper
 
-Materials in this directory serve three primary purposes in the paper:
+Materials in this directory serve three limited purposes:
 
-1. To motivate design choices that are summarized but not fully expanded in the
-   main text.
-2. To justify strict separation between exploratory failure discovery and
-   protocolized quantitative measurement.
-3. To constrain interpretation by explicitly stating what comparisons are and
-   are not supported by the experimental setup.
+1. **Clarify** design choices that are mentioned but not expanded in the main text.
+2. **Describe** the intended separation (e.g., exploratory failure discovery vs. protocolized quantitative measurement) without making additional claims.
+3. **List** what comparisons are and are not supported by the frozen setup, to reduce over-interpretation.
 
-These addenda are referenced to improve auditability and to prevent over- or
-mis-interpretation of quantitative results.
+These notes are **descriptive** and **non-conclusive**; they aim to improve auditability and reading clarity.
 
 ---
 
@@ -33,27 +29,21 @@ mis-interpretation of quantitative results.
 
 - `a_b_comparative_rationale.md`
 
-  Defines the methodological roles of Prompt Family A and Prompt Family B.
-  Prompt Family A is treated as an exploratory instrument for failure discovery,
-  while Prompt Family B serves as the measurement anchor for quantitative
-  evaluation. The document specifies comparison boundaries, exclusion criteria,
-  and interpretation constraints.
-
-Additional methodological notes may be added under the same scope if required
-for clarification or control analysis.
+  Describes the intended methodological roles of Prompt Family A and Prompt Family B **as defined in the frozen study setup**.
+  It summarizes the comparison boundaries, exclusion criteria, and interpretation constraints.
 
 ---
 
-## Authority and Scope Boundaries
+## Language and Authority
 
-- Files in this directory are written in English and constitute the authoritative
-  methodological reference for the A/B separation and associated control logic.
-- These materials extend the experimental narrative but do not alter the primary
-  execution protocol defined elsewhere.
+- Files in this directory are written in English for reviewer convenience.
+- This directory is **supplemental and non-authoritative**. It does **not** override or redefine any frozen protocol, rules, or results.
 
 ---
 
-## Relation to Other Components
+## Relation to Other Components (pointers only)
+
+The following paths are listed for navigation. Their contents are outside the scope of this directory:
 
 - Core experimental protocol and schemas: `supplement/01_experiment_design/`
 - Prompt definitions and variants: `supplement/02_prompt_variants/`

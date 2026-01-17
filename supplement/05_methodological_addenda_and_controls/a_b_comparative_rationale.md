@@ -2,42 +2,49 @@
 
 ## Scope
 
-This document defines the methodological rationale for introducing Prompt Family A and Prompt Family B in the experimental design. Its primary purpose is to motivate the separation between exploratory exposure and protocolized measurement, and to clarify how each family contributes to failure analysis and quantitative evaluation.
+This document **describes** the methodological roles of Prompt Family A and Prompt Family B **as used in the frozen study setup**.
+Its purpose is to **clarify the separation** between exploratory exposure and protocolized measurement, and to state the **comparison boundaries** that apply when reading any examples.
 
-This document does **not** introduce evaluation rules and does **not** modify scoring criteria. All observations referenced here are grounded in artifacts produced under the fixed execution protocol defined elsewhere.
+**Scope guardrails:**
+- **No new experiments, runs, prompts, variables, or evaluation dimensions** are introduced here.
+- This document **does not modify** evaluation rules, scoring criteria, or any frozen protocol.
+- Any examples mentioned here are **illustrative and non-conclusive** and are **not used** to compute, select, or modify reported results.
 
 ---
 
 ## Definition of Prompt Families
 
-### Prompt Family A: Exploratory Failure Surface
+### Prompt Family A: Exploratory Failure Surface (Illustrative Only)
 
-Prompt Family A is introduced to deliberately expand the observable failure surface under minimal structural constraints. Its role is **diagnostic rather than comparative**.
+Prompt Family A is used to expand the observable failure surface under minimal structural constraints.
+Its role is **diagnostic and illustrative**, not a competitive baseline.
 
 Characteristics:
 - Loosely structured prompt format
-- High degrees of freedom in generation
-- Intentionally weak or implicit constraint signaling
+- Higher degrees of freedom in generation
+- Weaker or implicit constraint signaling
 
-Family A is designed to expose failure modes that are otherwise suppressed under strict protocolization, including:
+Family A can make some failure modes **more visible** than under stricter protocolized prompting, such as:
 - Structural collapse and format instability
 - Instruction omission or substitution
-- Uncontrolled semantic drift and task rewriting
+- Semantic drift and task rewriting
 
-Outputs from Prompt Family A are logged and inspected qualitatively. They are **not merged into quantitative comparisons** unless explicitly stated, and they do not serve as performance baselines.
+Outputs from Prompt Family A are logged and inspected qualitatively.
+They are **not used** in any reported quantitative results, aggregates, rankings, or cross-model comparisons.
 
 ---
 
 ### Prompt Family B: Protocolized Measurement Anchor
 
-Prompt Family B serves as the **measurement anchor** for all quantitative analysis. It defines a stable and auditable interface between generation and evaluation.
+Prompt Family B serves as the measurement anchor for the study’s **reported quantitative analysis**.
+It defines a stable and auditable interface between generation and evaluation.
 
 Characteristics:
 - Fixed three-section output structure
 - Explicit constraint specification
 - Stable field boundaries suitable for automated scoring
 
-Family B establishes the reference condition against which controlled perturbations are evaluated. All reported quantitative results and aggregate statistics are derived exclusively from Prompt Family B and its variants.
+All reported quantitative results and aggregate statistics are derived exclusively from Prompt Family B and its frozen variants.
 
 ---
 
@@ -49,30 +56,32 @@ Comparisons are conducted under the following constraints:
 - Prompt Family A is not treated as a competing baseline
 - No cross-family normalization, ranking, or aggregation is performed
 
-Cross-family observations are reported only as **qualitative evidence** to contextualize observed failure patterns and to motivate protocolized evaluation.
+Cross-family notes, if present, are included only as **illustrative examples (non-conclusive)** to describe observable failure patterns.
+They are **not used** to support or strengthen any reported results.
 
 ---
 
 ## Interpretation Constraints
 
-Comparative observations are interpreted under strict constraints:
+When interpreting any comparative observations:
 
 - Differences are attributed only when a single factor is modified under an otherwise fixed protocol
-- Observations without minimal ablation are recorded as descriptive rather than causal
-- Family A observations do not support performance or robustness claims
+- Observations without minimal ablation are recorded as **descriptive**, not causal
+- Family A observations do not support performance, robustness, or generalization claims
 
-These constraints prevent exploratory variance from contaminating quantitative conclusions.
+These constraints keep exploratory variance **separate from** quantitative reporting.
 
 ---
 
 ## Role in Failure Analysis
 
-The A/B separation is central to the failure-oriented design of the study. Prompt Family A broadens the space of observable breakdowns, revealing classes of failures that inform taxonomy construction and diagnostic discussion. Prompt Family B, by contrast, constrains generation sufficiently to make such failures measurable, comparable, and aggregatable.
-
-This division allows failure cases to be treated as first-class empirical observations while preserving the integrity of quantitative evaluation.
+The A/B separation is a design choice used to keep exploratory inspection and protocolized measurement distinct.
+Prompt Family A broadens the space of observable breakdowns for **qualitative description**, while Prompt Family B constrains generation so that failures can be **measured and aggregated** under a fixed interface.
 
 ---
 
 ## Rationale Summary
 
-The A/B design decouples **failure discovery** from **failure measurement**. Prompt Family A functions as an exploratory instrument that surfaces latent failure modes, while Prompt Family B provides a protocolized substrate for controlled analysis. This separation is essential for interpreting drift phenomena without conflating exploratory variance with evaluative signal.
+The A/B design decouples **failure discovery** from **failure measurement**.
+Prompt Family A functions as an exploratory instrument that surfaces failure modes for qualitative inspection, while Prompt Family B provides a protocolized substrate for controlled quantitative analysis.
+This separation is intended to reduce over-interpretation of exploratory examples as evaluative signal.
