@@ -1,11 +1,12 @@
 # 03 evaluation rules
 
-**Authority:** `eval_protocol.md` is the only normative protocol in this directory; all other files are subordinate references.
+**Authority and reading order:** `eval_protocol.md` is the only normative protocol in this directory and MUST be read first. All other files are subordinate references and MUST NOT introduce additional rules or override the protocol.
 
 This directory defines evaluation **contracts** only.
 
 - It contains **no experimental results**.
 - It has **no dependency** on `tools/` or `supplement/04_results/`.
+- Tooling documents are **archival** and do not affect evaluation semantics.
 
 ---
 
@@ -20,9 +21,9 @@ This directory defines evaluation **contracts** only.
 - `eval_protocol.md` — protocol entry point and precedence.
 - `judge_prompt.md` — contract-instantiating prompt for producing one eval record.
 - `schema/eval_record.schema.json` — machine-checkable JSON structure and types for an eval record.
-- `snapshot_contracts.md` — Snapshot block contract definitions.
+- `snapshot_contracts.md` — Snapshot block contract definitions (applied to evaluated outputs).
 - `scoring_dimensions.md` — meanings of score fields used in each per-file score entry.
-- `validity_criteria.md` — binary valid/invalid adjudication conditions (contract-only).
-- `failure_taxonomy.md` — labels for contract-violation types.
-- `compute_scores.md` — documentation of the scoring utility mapping behavior.
-- `compute_scores.py` — scoring utility script.
+- `validity_criteria.md` — validity conditions for the judge record (JSON) only.
+- `failure_taxonomy.md` — labels for observable contract-violation types used in analysis artifacts.
+- `compute_scores.md` — documentation of an archival utility mapping behavior.
+- `compute_scores.py` — archival scoring utility script.

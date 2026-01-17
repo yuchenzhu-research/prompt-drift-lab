@@ -70,10 +70,11 @@ The evaluated file name MAY be included in the record for alignment and traceabi
 
 ### 4.1 output
 Each evaluation run MUST produce **one** judge record (one JSON object).
-- Note (schema variants): the schema permits either
-- (A) a full record with run-level metadata fields, or
-- (B) a bundle-only record that contains `per_file_scores` (plus optional `bundle_meta`).
-- If run-level metadata is stored separately (e.g., `run_meta.json`), the bundle-only variant MAY be used.
+
+- The schema permits either:
+  - (A) a full record with run-level metadata fields, or
+  - (B) a bundle-only record that contains `per_file_scores` (plus optional `bundle_meta`).
+- If run-level metadata is provided, it MUST conform to `schema/eval_record.schema.json`. The bundle-only variant MAY be used when such metadata is omitted.
 
 ### 4.2 `per_file_scores` is the core atomic unit
 `per_file_scores` is the **only atomic unit** used for aggregation.
@@ -113,20 +114,20 @@ Invalid records:
 
 This repo defines three phases. Phases differ only by **judge mode** and **structural constraints**.
 
-### 6.1 Phase 0 (v0): diagnostic
+### 6.1 Phase 0: diagnostic
 Phase 0 is **diagnostic only**.
 
 - Phase 0 records MUST be labeled as Phase 0 in run metadata.
 - Phase 0 outputs MUST NOT be used for final claims.
 - Phase 0 MAY relax constraints compared to Phase 1/2, but any relaxations MUST be explicitly stated in the Phase 0 judge prompt.
 
-### 6.2 Phase 1 (v1): primary judging
+### 6.2 Phase 1: primary judging
 Phase 1 is the primary mode used for aggregation.
 
 - Phase 1 MUST enforce the active structural constraints stated in the judge prompt and referenced rule lists.
 - Phase 1 validity MUST follow Section 5.
 
-### 6.3 Phase 2 (v2): strict structure enforcement
+### 6.3 Phase 2: strict structure enforcement
 Phase 2 is a stricter structure mode.
 
 - Phase 2 MUST enforce all Phase 1 requirements.

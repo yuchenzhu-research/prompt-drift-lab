@@ -19,9 +19,9 @@ For each evaluated file, you receive:
 - `file`: the evaluated file identifier (path or filename)
 - `model_output`: the evaluated file content (as provided)
 
-You also receive run-level metadata (as provided).
+You also receive run-level metadata, if provided.
 
-You MUST judge each file independently. You MUST NOT infer meaning from file paths, names, directory names, model names, or any metadata labels.
+You MUST judge each file independently. You MUST NOT infer meaning from file paths, names, directory names, model names, or metadata labels.
 
 ---
 
@@ -35,20 +35,15 @@ You MUST output **one** strict JSON object.
 
 ### 2.1 required top-level fields
 
-The output MUST validate against `schema/eval_record.schema.json`.
-
 You MUST output **one** of the following schema-valid variants:
 
 **(A) Full record**  
-If you include run-level metadata, the output MUST include all fields required by the
-`full_record_with_run_metadata` branch of the schema (e.g., `eval_id`, `run_id`, `created_at`, etc.).
+If run-level metadata is included, the output MUST include all fields required by the `full_record_with_run_metadata` branch of the schema.
 
 **(B) Bundle-only record**  
-If run-level metadata is stored separately (e.g., in `run_meta.json`), you MAY output a bundle-only
-record that contains:
-- `per_file_scores` (array)
+If run-level metadata is not included, you MAY output a bundle-only record that contains `per_file_scores`.
 
-You MUST NOT mix partial fields across variants.
+You MUST NOT mix fields across variants.
 The output MUST include exactly the fields required by the chosen schema branch and no others.
 
 ### 2.2 optional top-level fields
@@ -94,6 +89,7 @@ If `evidence` is present:
 For each score key, the value MUST be one of `{0, 1, 2}`.
 
 ### 3.4 scoring rules
+
 You MUST assign scores by applying the definitions in `scoring_dimensions.md`.
 
 You MUST NOT add new dimensions, redefine dimension meanings, or change the scoring scale.
@@ -108,7 +104,7 @@ The Snapshot section MUST be checked only by the Snapshot contract rules:
 - required Snapshot header token
 - required Snapshot body shape
 - word limit
-- allowed / forbidden content types stated by the active contract
+- allowed and forbidden content types stated by the active contract
 
 You MUST NOT introduce additional Snapshot requirements.
 
@@ -120,15 +116,15 @@ You MUST NOT:
 - output anything other than a single JSON object
 - add any keys not permitted by `schema/eval_record.schema.json`
 - infer semantics from file names, directory names, model names, or metadata labels
-- reconstruct the evaluated file into a new representation (OCR/reflow/markdown conversion/metadata extraction)
+- reconstruct the evaluated file into a new representation (OCR, reflow, markdown conversion, metadata extraction)
 - include research narration (goals, hypotheses, observations, trends)
-- include mitigation, stability, robustness, drift, or phase language
+- include mitigation, stability, robustness, drift, or phase narration
 
 ---
 
 ## 6) output skeleton (schema-shaped)
 
-You MUST output strict JSON in the following schema-shaped form (field order is not significant):
+You MUST output strict JSON in the following schema-shaped form. Field order is not significant.
 
 ```json
 {
