@@ -16,6 +16,13 @@ import json
 import hashlib
 
 # -----------------------------
+# Analysis metadata (fixed)
+# -----------------------------
+ANALYSIS_KIND = "derived_descriptive"  # machine-readable audit label
+SCOPE_NOTE = "derived-only; descriptive; no causal claims; non-authoritative"
+
+
+# -----------------------------
 # Failure taxonomy (fixed)
 # -----------------------------
 FAILURE_TYPES = [
@@ -111,6 +118,8 @@ def analyze_output(
     triggered = [r for r in results if r.get("triggered")]
 
     return {
+        "analysis_kind": ANALYSIS_KIND,
+        "scope_note": SCOPE_NOTE,
         "total_failures": len(triggered),
         "failure_types": [r["type"] for r in triggered],
         "details": results,
@@ -146,6 +155,8 @@ if __name__ == "__main__":
 
     report = {
         "output_hash": stable_hash(example_output),
+        "analysis_kind": ANALYSIS_KIND,
+        "scope_note": SCOPE_NOTE,
         "analysis": analysis,
     }
 

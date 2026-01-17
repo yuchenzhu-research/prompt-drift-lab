@@ -2,121 +2,75 @@
 
 ## Scope
 
-This directory contains **analysis- and reproduction-level utilities** only.  
-No script in this directory executes, simulates, or invokes any LLM.
+This directory contains **offline reproduction and audit utilities**.
 
-The tools operate exclusively on **already-generated artifacts** (PDFs or
-structured JSON) and are designed to support a **deterministic, post-hoc
-analysis and reproduction pipeline**.
+- No script in this directory calls external APIs or invokes any LLM.
+- All scripts operate only on **stored judge JSON artifacts**.
+- No script re-parses or recomputes results from raw model-output PDFs.
 
 ---
 
-## Authoritative Reproduction Entry
+## Authoritative reproduction entry
 
 ### `reproduce_valid_evaluations.py`
 
-This is the **only authoritative executable entry point** in this directory.
+This is the **only authoritative executable entry point** for reproducing reported result tables.
 
-It provides a deterministic, offline execution path to regenerate:
-
+**Inputs (read-only):**
 ```
-supplement/04_results/02_cross_model_evaluation/valid_evaluations/
-```
-
-from stored raw PDF outputs under:
-
-```
-supplement/04_results/01_raw_model_outputs/
+supplement/04_results/02_raw_judge_evaluations/
 ```
 
-**Key properties**
-- No external APIs or LLM calls
-- Deterministic execution
-- Intended solely for artifact executability and auditability
+**Outputs (materialized):**
+```
+supplement/04_results/03_processed_evaluations/
+```
 
-The script regenerates:
-- `main_method_cross_model/` (primary evaluation results)
-- `supporting_method_self_eval/` (offline structural placeholders)
+**Guarantees**
+- Deterministic execution (same inputs → same outputs)
+- Consumes judge JSON bundles / records only
+- File names are preserved verbatim as identifiers; any parsing (if present) is used **only** to materialize grouping keys and **never** affects validity or scoring
 
-Files under `supporting_method_self_eval/` are explicitly marked as offline
-placeholders and **do not correspond to rerunning self-judging with generator
-models**.
+**Materialized products**
+- Per-file evaluation records under `*/valid_evaluations/`
+- Aggregated tables under `*/summary_tables/` (e.g., `scores_long.csv`, `scores_grouped.csv`)
 
 ---
 
-## Relation to Evaluation Rules (`03_evaluation_rules/`)
+## Relation to evaluation rules (`supplement/03_evaluation_rules/`)
 
-The executable reproduction script in this directory is **downstream of** the
-formal evaluation contract defined under:
+Evaluation authority is defined **upstream** under:
 
 ```
 supplement/03_evaluation_rules/
 ```
 
-In particular:
-- Evaluation authority is defined by rule documents and schema files in
-  `03_evaluation_rules/`
-- `03_evaluation_rules/compute_scores.py` provides a **reference
-  implementation** of scoring logic
-- That reference script is **non-executable for reproduction** and is included
-  for transparency and auditability only
-
-`reproduce_valid_evaluations.py` **does not reimplement or override** evaluation
-rules; it only applies those rules in a fixed, deterministic manner to
-pre-generated artifacts.
+- Rule documents and schemas define validity, structure, and scoring fields.
+- This `tools/` directory does **not** define or override evaluation rules.
 
 ---
 
-## Utility and Historical Scripts
+## Non-authoritative utilities
 
-The remaining scripts are retained for transparency and inspection. They were
-used during development or analysis but are **not required** to reproduce the
-main evaluation results:
+The remaining scripts are retained for inspection and local diagnostics only.
+They are **not part of the authoritative reproduction path** and are **not required**
+to reproduce the reported result tables.
 
-- `analysis_utils/drift_analyzer.py`  
-  Utilities for inspecting prompt-drift and failure patterns.
-
-- `scoring_utils/rubric_scorer.py`  
-  Rubric-aligned scoring helpers used during development.
-
-- `validation_utils/schema_checker.py`  
-  Schema validation utilities for checking output conformity.
-
----
-
-## Examples
-
-The `examples/` directory contains illustrative input/output examples only.
-
-These files are **not** used in the reproduction pipeline and are provided
-solely for reference and documentation purposes.
+- `validation_utils/schema_checker.py` — auxiliary schema validation utility
+  (offline; **non-authoritative and not invoked by the reproduction script**)
+- `scoring_utils/rubric_scorer.py` — failure-label → rubric-score mapper
+  (offline; **non-authoritative and not invoked by the reproduction script**)
+- `analysis_utils/drift_analyzer.py` — derived, descriptive analysis helpers
+  (offline; **non-authoritative and not invoked by the reproduction script**)
+- `examples/` contains illustrative input/output examples only
+  (**example-only, non-authoritative, and not used in reproduction or scoring**).
+- `legacy/` contains archived scripts retained for historical reference only
+  (**non-authoritative and not used in the current reproduction path**). In particular,
+  `legacy/reproduce_from_pdfs_legacy.py` is an archived script and requires an explicit
+  acknowledgement flag to run.
 
 ---
 
-## Reproducibility Statement
+## Reproducibility statement
 
-Given identical stored artifacts, all outputs produced by
-`reproduce_valid_evaluations.py` are reproducible.
-
-This directory does **not** claim execution-level reproducibility of original
-model generations, which were collected via external web-based interfaces.
-
----
-
-## PDF Parsing Notes
-
-Some raw model outputs are stored as **Chinese-language PDFs**. During offline
-text extraction (via `pdfplumber` / `pdfminer`), the following warnings may
-appear:
-
-```
-Could not get FontBBox from font descriptor because None cannot be parsed as 4 floats
-```
-
-These warnings originate from font metadata irregularities in certain PDF
-encodings and **do not indicate a failure of text extraction**.
-
-They are benign, non-fatal messages and **do not affect**:
-- the extracted textual content used for evaluation
-- the structure of regenerated evaluation records
-- the determinism or completeness of the reproduction pipeline
+Given identical stored judge JSON artifacts under `supplement/04_results/02_raw_judge_evaluations/`, running `reproduce_valid_evaluations.py` reproduces the processed records and summary tables under `supplement/04_results/03_processed_evaluations/` deterministically.

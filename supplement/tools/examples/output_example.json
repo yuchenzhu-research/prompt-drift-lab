@@ -1,113 +1,134 @@
 {
-  "sample_id": "ex-002",
-  "output_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "schema_check": {
-    "schema_valid": false,
-    "violations": [
-      {
-        "rule": "required_sections",
-        "missing": ["## Answer", "## Reasoning"],
-        "triggered": true
-      }
-    ],
-    "details": [
-      {
-        "rule": "required_sections",
-        "missing": ["## Answer", "## Reasoning"],
-        "triggered": true
-      },
-      {
-        "rule": "forbidden_sections",
-        "present": [],
-        "triggered": false
-      },
-      {
-        "rule": "ordered_sections",
-        "positions": {
-          "## Answer": -1,
-          "## Reasoning": -1
-        },
-        "triggered": false
-      },
-      {
-        "rule": "max_sections",
-        "count": 0,
-        "max_allowed": 2,
-        "triggered": false
-      },
-      {
-        "rule": "extra_text",
-        "triggered": false
-      }
-    ]
+  "_meta": {
+    "authoritative": false,
+    "example_only": true,
+    "note": "EXAMPLE ONLY. NON-AUTHORITATIVE. NOT USED FOR REPRODUCTION OR SCORING."
   },
   "drift_analysis": {
-    "total_failures": 3,
+    "analysis_kind": "derived_descriptive",
+    "details": [
+      {
+        "missing_markers": [
+          "## Answer",
+          "## Reasoning"
+        ],
+        "triggered": true,
+        "type": "schema_violation"
+      },
+      {
+        "triggered": true,
+        "type": "instruction_deviation",
+        "violated_constraints": [
+          "step by step"
+        ]
+      },
+      {
+        "confidence": 1.0,
+        "missing_anchor_terms": [
+          "prompt drift",
+          "instruction following"
+        ],
+        "triggered": true,
+        "type": "semantic_drift"
+      },
+      {
+        "length": 83,
+        "max_expected": 500,
+        "triggered": false,
+        "type": "extraneous_content"
+      }
+    ],
     "failure_types": [
       "schema_violation",
       "instruction_deviation",
       "semantic_drift"
     ],
-    "details": [
-      {
-        "type": "schema_violation",
-        "missing_markers": ["## Answer", "## Reasoning"],
-        "triggered": true
-      },
-      {
-        "type": "instruction_deviation",
-        "violated_constraints": ["step by step"],
-        "triggered": true
-      },
-      {
-        "type": "semantic_drift",
-        "missing_anchor_terms": ["prompt drift", "instruction following"],
-        "confidence": 1.0,
-        "triggered": true
-      },
-      {
-        "type": "extraneous_content",
-        "length": 83,
-        "max_expected": 500,
-        "triggered": false
-      }
-    ]
+    "scope_note": "derived-only; descriptive; no causal claims; non-authoritative",
+    "total_failures": 3
   },
+  "output_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "rubric_score": {
     "dimension_scores": {
-      "schema_compliance": {
-        "score": 0,
-        "max_score": 2,
-        "penalties": [
-          {
-            "failure": "schema_violation",
-            "penalty": 2
-          }
-        ]
-      },
       "instruction_following": {
-        "score": 1,
         "max_score": 3,
         "penalties": [
           {
             "failure": "instruction_deviation",
             "penalty": 2
           }
-        ]
+        ],
+        "score": 1
+      },
+      "schema_compliance": {
+        "max_score": 2,
+        "penalties": [
+          {
+            "failure": "schema_violation",
+            "penalty": 2
+          }
+        ],
+        "score": 0
       },
       "semantic_fidelity": {
-        "score": 1,
         "max_score": 3,
         "penalties": [
           {
             "failure": "semantic_drift",
             "penalty": 2
           }
-        ]
+        ],
+        "score": 1
       }
     },
-    "total_score": 2,
+    "normalized_score": 0.25,
     "total_max": 8,
-    "normalized_score": 0.25
+    "total_score": 2
+  },
+  "sample_id": "ex-002",
+  "schema_check": {
+    "details": [
+      {
+        "missing": [
+          "## Answer",
+          "## Reasoning"
+        ],
+        "rule": "required_sections",
+        "triggered": true
+      },
+      {
+        "present": [],
+        "rule": "forbidden_sections",
+        "triggered": false
+      },
+      {
+        "positions": {
+          "## Answer": -1,
+          "## Reasoning": -1
+        },
+        "rule": "ordered_sections",
+        "triggered": false
+      },
+      {
+        "count": 0,
+        "max_allowed": 2,
+        "rule": "max_sections",
+        "triggered": false
+      },
+      {
+        "rule": "extra_text",
+        "triggered": false
+      }
+    ],
+    "schema_valid": false,
+    "violations": [
+      {
+        "missing": [
+          "## Answer",
+          "## Reasoning"
+        ],
+        "rule": "required_sections",
+        "triggered": true
+      }
+    ]
   }
 }
