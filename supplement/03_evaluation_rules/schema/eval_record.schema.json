@@ -4,97 +4,65 @@
   "title": "Prompt Drift Lab - Eval Record (Structure Only)",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "eval_id",
-    "run_id",
-    "created_at",
-    "protocol_version",
-    "judge_model",
-    "generator_model",
-    "question_id",
-    "prompt_version",
-    "length_variant",
-    "instruction_variant",
-    "per_file_scores"
-  ],
+
   "properties": {
-    "eval_id": {
-      "type": "string",
-      "description": "Evaluation record identifier."
-    },
-    "run_id": {
-      "type": "string",
-      "description": "Run identifier."
-    },
-    "created_at": {
-      "type": "string",
-      "description": "Creation timestamp as a string."
-    },
-    "protocol_version": {
-      "type": "string",
-      "description": "Protocol identifier as a string."
-    },
-    "judge_prompt_version": {
-      "type": "string",
-      "description": "Judge prompt version tag as a string."
-    },
-    "judge_model": {
-      "type": "string",
-      "description": "Judge model identifier as a string."
-    },
-    "generator_model": {
-      "type": "string",
-      "description": "Generator model identifier as a string."
-    },
-    "question_id": {
-      "type": "string",
-      "description": "Question identifier as a string."
-    },
-    "prompt_version": {
-      "type": "string",
-      "description": "Prompt version identifier as a string."
-    },
-    "length_variant": {
-      "type": "string",
-      "description": "Length variant identifier as a string."
-    },
-    "instruction_variant": {
-      "type": "string",
-      "description": "Instruction variant identifier as a string."
-    },
+    "eval_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "protocol_version": { "type": "string" },
+
+    "judge_prompt_version": { "type": "string" },
+    "judge_model": { "type": "string" },
+    "generator_model": { "type": "string" },
+    "question_id": { "type": "string" },
+    "prompt_version": { "type": "string" },
+    "length_variant": { "type": "string" },
+    "instruction_variant": { "type": "string" },
+
     "source_artifact": {
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "path"],
       "properties": {
-        "type": {
-          "type": "string",
-          "description": "Artifact type as a string."
-        },
-        "path": {
-          "type": "string",
-          "description": "Artifact path as a string."
-        },
-        "sha256": {
-          "type": "string",
-          "description": "Checksum as a string."
-        }
-      },
-      "description": "Pointer to an evaluated artifact."
-    },
-
-    "per_file_scores": {
-      "type": "array",
-      "description": "Per-file evaluation entries.",
-      "items": { "$ref": "#/$defs/per_file_score" }
+        "type": { "type": "string" },
+        "path": { "type": "string" },
+        "sha256": { "type": "string" }
+      }
     },
 
     "bundle_meta": {
       "type": "object",
-      "description": "Optional metadata object.",
       "additionalProperties": true
+    },
+
+    "per_file_scores": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/per_file_score" }
     }
   },
+
+  "oneOf": [
+    {
+      "title": "full_record_with_run_metadata",
+      "required": [
+        "eval_id",
+        "run_id",
+        "created_at",
+        "protocol_version",
+        "judge_model",
+        "generator_model",
+        "question_id",
+        "prompt_version",
+        "length_variant",
+        "instruction_variant",
+        "per_file_scores"
+      ]
+    },
+    {
+      "title": "bundle_only_record",
+      "required": ["per_file_scores"]
+    }
+  ],
 
   "$defs": {
     "per_file_score": {
@@ -102,10 +70,8 @@
       "additionalProperties": false,
       "required": ["file", "scores"],
       "properties": {
-        "file": {
-          "type": "string",
-          "description": "Evaluated file identifier as a string."
-        },
+        "file": { "type": "string" },
+
         "scores": {
           "type": "object",
           "additionalProperties": false,
@@ -117,18 +83,16 @@
             "E_drift_failure"
           ],
           "properties": {
-            "A_structure": { "type": "number" },
-            "B_snapshot_constraint": { "type": "number" },
-            "C_actionability": { "type": "number" },
-            "D_completeness": { "type": "number" },
-            "E_drift_failure": { "type": "number" }
-          },
-          "description": "Score fields (numbers only)."
+            "A_structure": { "type": "number", "enum": [0, 1, 2] },
+            "B_snapshot_constraint": { "type": "number", "enum": [0, 1, 2] },
+            "C_actionability": { "type": "number", "enum": [0, 1, 2] },
+            "D_completeness": { "type": "number", "enum": [0, 1, 2] },
+            "E_drift_failure": { "type": "number", "enum": [0, 1, 2] }
+          }
         },
-        "total": {
-          "type": "number",
-          "description": "Optional total score as a number."
-        },
+
+        "total": { "type": "number" },
+
         "evidence": {
           "type": "object",
           "additionalProperties": false,
@@ -138,8 +102,7 @@
             "C_actionability": { "type": "string" },
             "D_completeness": { "type": "string" },
             "E_drift_failure": { "type": "string" }
-          },
-          "description": "Optional evidence strings."
+          }
         }
       }
     }

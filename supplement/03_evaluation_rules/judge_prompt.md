@@ -1,4 +1,4 @@
-# judge prompt — eval record execution (contract instantiation)
+# judge prompt — eval record execution
 
 You are an evaluator (**judge**). Execute the evaluation contract and output a single JSON object that conforms to `schema/eval_record.schema.json`.
 
@@ -14,16 +14,18 @@ You MUST follow only these documents. You MUST NOT introduce new requirements.
 
 ## 1) input
 
-You receive one evaluation sample:
-- `source_artifact`: the evaluated file identifier (path or filename)
+You receive one evaluation bundle for a single `question_id`.
+For each evaluated file, you receive:
+- `file`: the evaluated file identifier (path or filename)
 - `model_output`: the evaluated file content (as provided)
-- `question_id` and run metadata (as provided)
 
-You MUST judge the sample independently. You MUST NOT infer meaning from file paths, names, directory names, model names, or any metadata labels.
+You also receive run-level metadata (as provided).
+
+You MUST judge each file independently. You MUST NOT infer meaning from file paths, names, directory names, model names, or any metadata labels.
 
 ---
 
-## 2) output (strict JSON only)
+## 2) output
 
 You MUST output **one** strict JSON object.
 
@@ -31,40 +33,38 @@ You MUST output **one** strict JSON object.
 - The output MUST NOT include any text outside JSON.
 - The output MUST NOT include any top-level keys not defined by the schema.
 
-### 2.1 required top-level fields (exact)
+### 2.1 required top-level fields
 
-The output JSON object MUST include all required fields with the exact names and types required by the schema:
+The output MUST validate against `schema/eval_record.schema.json`.
 
-- `eval_id` (string)
-- `run_id` (string)
-- `created_at` (string)
-- `protocol_version` (string)
-- `judge_model` (string)
-- `generator_model` (string)
-- `question_id` (string)
-- `prompt_version` (string)
-- `length_variant` (string)
-- `instruction_variant` (string)
-- `metrics` (object)
+You MUST output **one** of the following schema-valid variants:
 
-If the schema requires additional fields in your runtime environment, you MUST include them exactly as required.
+**(A) Full record**  
+If you include run-level metadata, the output MUST include all fields required by the
+`full_record_with_run_metadata` branch of the schema (e.g., `eval_id`, `run_id`, `created_at`, etc.).
 
-### 2.2 optional top-level fields (schema-defined only)
+**(B) Bundle-only record**  
+If run-level metadata is stored separately (e.g., in `run_meta.json`), you MAY output a bundle-only
+record that contains:
+- `per_file_scores` (array)
+
+You MUST NOT mix partial fields across variants.
+The output MUST include exactly the fields required by the chosen schema branch and no others.
+
+### 2.2 optional top-level fields
 
 You SHALL include an optional top-level field only if it is defined by the schema:
 - `judge_prompt_version`
 - `source_artifact`
-- `overall`
-- `evidence_snippets`
-- `notes`
+- `bundle_meta`
 
 ---
 
-## 3) metrics (field names and scoring)
+## 3) per_file_scores
 
-### 3.1 metric keys (exact)
+### 3.1 score keys
 
-The `metrics` object MUST contain exactly the following five keys, matching `scoring_dimensions.md` **character-for-character**:
+Each `per_file_scores[i].scores` object MUST contain exactly the following five keys, matching `scoring_dimensions.md` **character-for-character**:
 
 - `A_structure`
 - `B_snapshot_constraint`
@@ -72,31 +72,29 @@ The `metrics` object MUST contain exactly the following five keys, matching `sco
 - `D_completeness`
 - `E_drift_failure`
 
-No other metric keys are permitted.
+No other score keys are permitted.
 
-### 3.2 metric value shape (schema-defined)
+### 3.2 value shape
 
-Each `metrics[KEY]` MUST be an object that conforms to the schema `metric_result` definition.
+Each element of `per_file_scores` MUST conform to `schema/eval_record.schema.json`:
 
-Minimum requirement:
-- `score` MUST be present and MUST be a number.
+- `file` MUST be present (string)
+- `scores` MUST be present (object with exactly the five keys above)
 
-If `rationale` is present:
-- it MUST be a string
-- it MUST describe the observed violation or satisfaction only
+Optional:
+- `total` (number)
+- `evidence` (object of strings keyed by the same five keys)
 
 If `evidence` is present:
-- it MUST be an array
-- each element MUST be an object with `text` (string)
-- evidence `text` MUST be a verbatim excerpt from `model_output`
+- each value MUST be a string
+- each string MUST be a verbatim excerpt from `model_output`
 
 ### 3.3 allowed score values
 
-For each metric key, `score` MUST be one of `{0, 1, 2}`.
+For each score key, the value MUST be one of `{0, 1, 2}`.
 
-### 3.4 metric decision rules (contract execution)
-
-You MUST assign metric scores by applying the definitions in `scoring_dimensions.md`.
+### 3.4 scoring rules
+You MUST assign scores by applying the definitions in `scoring_dimensions.md`.
 
 You MUST NOT add new dimensions, redefine dimension meanings, or change the scoring scale.
 
@@ -121,8 +119,8 @@ You MUST NOT introduce additional Snapshot requirements.
 You MUST NOT:
 - output anything other than a single JSON object
 - add any keys not permitted by `schema/eval_record.schema.json`
-- infer semantics from `source_artifact`, file names, directory names, model names, or any metadata labels
-- reconstruct the evaluated file into a new representation (OCR/reflow/markdown conversion/metadata extraction) beyond reading the provided content
+- infer semantics from file names, directory names, model names, or metadata labels
+- reconstruct the evaluated file into a new representation (OCR/reflow/markdown conversion/metadata extraction)
 - include research narration (goals, hypotheses, observations, trends)
 - include mitigation, stability, robustness, drift, or phase language
 
@@ -145,17 +143,32 @@ You MUST output strict JSON in the following schema-shaped form (field order is 
   "prompt_version": "...",
   "length_variant": "...",
   "instruction_variant": "...",
-  "source_artifact": "...",
-  "metrics": {
-    "A_structure": {"score": 0},
-    "B_snapshot_constraint": {"score": 0},
-    "C_actionability": {"score": 0},
-    "D_completeness": {"score": 0},
-    "E_drift_failure": {"score": 0}
+  "source_artifact": {
+    "type": "...",
+    "path": "...",
+    "sha256": "..."
   },
-  "overall": {"score": 0, "max_score": 0, "summary": ""},
-  "evidence_snippets": [{"text": "", "location": ""}],
-  "notes": ""
+  "per_file_scores": [
+    {
+      "file": "...",
+      "scores": {
+        "A_structure": 0,
+        "B_snapshot_constraint": 0,
+        "C_actionability": 0,
+        "D_completeness": 0,
+        "E_drift_failure": 0
+      },
+      "total": 0,
+      "evidence": {
+        "A_structure": "...",
+        "B_snapshot_constraint": "...",
+        "C_actionability": "...",
+        "D_completeness": "...",
+        "E_drift_failure": "..."
+      }
+    }
+  ],
+  "bundle_meta": {}
 }
 ```
 

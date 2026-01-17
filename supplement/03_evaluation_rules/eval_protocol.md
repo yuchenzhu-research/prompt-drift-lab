@@ -47,7 +47,7 @@ A **judge record** is a single JSON object produced by the judge.
 
 ## 3. judge input and prohibited behaviors
 
-### 3.1 judge input (what the judge receives)
+### 3.1 judge input
 For each evaluated file, the judge input MUST be:
 1) the evaluated file content (PDF)
 2) the active evaluation rules (this protocol + any referenced subordinate lists)
@@ -55,24 +55,25 @@ For each evaluated file, the judge input MUST be:
 
 No other inputs are permitted.
 
-### 3.2 prohibited behaviors (semantic constraints)
+### 3.2 prohibited behaviors
 The judge MUST NOT:
 - **re-parse** or reconstruct the PDF into a new representation (e.g., OCR, reflowing, converting to markdown, extracting metadata) beyond reading the visible content as provided
 - **manually reinterpret** the task by injecting unstated assumptions
 - **infer semantics** from file paths, file names, directory names, model names, or bundle composition
 - use any external knowledge of this repo structure as a scoring shortcut
 
-The evaluated file name MAY be included in the record for alignment and traceability (Section 4.2), but it MUST NOT affect scoring.
+The evaluated file name MAY be included in the record for alignment and traceability (Section 4.3), but it MUST NOT affect scoring.
 
 ---
 
 ## 4. evaluation output and atomic unit
 
-### 4.1 output (what the judge produces)
+### 4.1 output
 Each evaluation run MUST produce **one** judge record (one JSON object).
-
-- The record MUST be strict JSON.
-- The record MUST validate against `schema/eval_record.schema.json`.
+- Note (schema variants): the schema permits either
+- (A) a full record with run-level metadata fields, or
+- (B) a bundle-only record that contains `per_file_scores` (plus optional `bundle_meta`).
+- If run-level metadata is stored separately (e.g., `run_meta.json`), the bundle-only variant MAY be used.
 
 ### 4.2 `per_file_scores` is the core atomic unit
 `per_file_scores` is the **only atomic unit** used for aggregation.
@@ -82,6 +83,10 @@ Rules:
 - **All aggregation and summary statistics MUST be computed only from `per_file_scores` entries** that pass validity screening (Section 5).
 - Any additional fields (bundle metadata, run metadata, notes) MUST NOT be used as an alternative scoring base.
 
+**Compatibility note:**
+- Any judge output that uses a top-level field named `metrics` (instead of `per_file_scores`) is **non-conforming** under this protocol.
+- Such records MUST be marked **invalid** and MUST NOT be included in primary aggregation, even if they partially resemble earlier drafts.
+
 ### 4.3 file name preservation without semantic use
 For each `per_file_scores` entry:
 - the `file` field MUST preserve the file name **character-for-character** (no normalization, no path rewriting)
@@ -90,7 +95,7 @@ For each `per_file_scores` entry:
 
 ---
 
-## 5. validity screening (what counts as valid)
+## 5. validity screening
 
 A judge record MUST be marked invalid if any of the following holds:
 - the output is not strict JSON
@@ -150,7 +155,7 @@ Self-judging is when the generator model judges its own outputs.
 
 ---
 
-## 8. references (subordinate, non-parallel)
+## 8. references
 
 The following documents are subordinate references. They MUST NOT override this protocol.
 
