@@ -7,7 +7,7 @@ It clarifies already-frozen design rationale, control assumptions, and compariso
 - **No new experiments, runs, prompts, variables, or evaluation dimensions** are introduced here.
 - These notes are **not used to compute, select, or modify** any reported results, scores, or aggregates.
 - These notes **do not change** the frozen execution protocol, evaluation rules, or output schemas defined elsewhere.
-- If any wording here appears inconsistent with the frozen protocol/results, the frozen protocol/results **take precedence**.
+- Where any wording in this directory differs from the frozen protocol/results, the frozen protocol/results take precedence.
 
 The notes are kept separate so the **measurement interface remains unchanged**, while the study’s design intent and comparison boundaries are made explicit.
 

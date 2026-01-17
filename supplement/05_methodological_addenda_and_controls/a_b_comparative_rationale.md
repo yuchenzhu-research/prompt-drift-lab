@@ -24,7 +24,7 @@ Characteristics:
 - Higher degrees of freedom in generation
 - Weaker or implicit constraint signaling
 
-Family A can make some failure modes **more visible** than under stricter protocolized prompting, such as:
+Family A is used to surface failure modes that are harder to observe under stricter protocolized prompting, such as:
 - Structural collapse and format instability
 - Instruction omission or substitution
 - Semantic drift and task rewriting
@@ -56,7 +56,7 @@ Comparisons are conducted under the following constraints:
 - Prompt Family A is not treated as a competing baseline
 - No cross-family normalization, ranking, or aggregation is performed
 
-Cross-family notes, if present, are included only as **illustrative examples (non-conclusive)** to describe observable failure patterns.
+Cross-family notes are included only as illustrative examples (non-conclusive) to describe observable failure patterns.
 They are **not used** to support or strengthen any reported results.
 
 ---
