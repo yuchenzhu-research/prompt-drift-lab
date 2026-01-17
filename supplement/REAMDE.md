@@ -1,101 +1,138 @@
-# Supplement Artifact Pack README
+# Prompt Drift Lab — Reproducible Evaluation Artifact Pack (ICLR 2026 Workshop)
 
-This `supplement/` directory is the complete artifact set referenced by the paper. It is organized for **auditability** and **inspection-driven reproducibility**: reviewers can trace every reported number and every failure case back to preserved raw outputs and fixed evaluation contracts.
+Prompt Drift Lab is a frozen, inspection-friendly evaluation pack for observing **behavior drift under small prompt changes** (instruction-following drop, schema/format break, semantic drift).
 
-No script in this directory is required to be executed by reviewers.
+This repository is organized around a one-way evidence chain:
 
----
+**inputs → raw outputs → judged records → summary tables**
 
-## 1) Language Policy and What Is Actually Chinese
-
-This project was executed with **Chinese experimental inputs** but is packaged for **English-speaking review**.
-
-**Chinese (execution inputs):**
-- The **authoritative question set** is Chinese and consists of four questions:
-  - `01_experiment_design/eval_questions_ZH.jsonl`
-- All **generator-side prompt variants used for execution** are Chinese:
-  - `02_prompt_variants/00_baseline_prompt_A.txt`
-  - `02_prompt_variants/01_structured_prompt_B.txt`
-  - `02_prompt_variants/02_conflict_prompt.txt`
-  - `02_prompt_variants/03_long_prompt.txt`
-  - `02_prompt_variants/04_weak_prompt.txt`
-
-**English (documentation and evaluation contracts):**
-- Experimental protocol, output schema, evaluation rules, rubrics, validity criteria, and methodological notes are documented in English across the supplement directories.
-
-**Raw outputs (as generated):**
-- The preserved model outputs are stored as **48 raw PDF files** under:
-  - `04_results/01_raw_model_outputs/`
-- These PDFs are kept verbatim as the evidence layer; they are not edited or cleaned.
+Reviewers can trace every reported number back to preserved artifacts without re-running model inference.
 
 ---
 
-## 2) What Each Supplement Directory Does
+## Start here (2–5 minutes)
 
-- `01_experiment_design/` — **Design contracts and inputs**
-  - Defines the question partitioning (development vs held-out), the execution protocol, and the output structure contract.
-  - Contains terminology alignment and explicit threats/limitations for audit and correct interpretation.
+1. **Primary result tables (what the paper cites)**
+   - `supplement/04_results/03_processed_evaluations/*/summary_tables/scores_grouped.csv`
+   - `supplement/04_results/03_processed_evaluations/*/summary_tables/scores_long.csv`
 
-- `02_prompt_variants/` — **Generator-side prompt definitions**
-  - Stores the Chinese prompt variants used to produce raw outputs.
-  - Provides an English-readable description of each variant’s role without introducing an alternative executable prompt set.
+2. **Evaluation authority (what “counts” as valid, how scoring fields are defined)**
+   - `supplement/03_evaluation_rules/eval_protocol.md` (normative entry point)
 
-- `03_evaluation_rules/` — **Judging and scoring contracts**
-  - Defines validity boundaries, scoring dimensions, failure flags, and taxonomy.
-  - This is the single location for how outputs are judged and aggregated.
-
-- `04_results/` — **Frozen evidence and derived records**
-  - Stores raw model outputs (PDF), per-sample judged records, invalid reports, and summary tables.
-  - All reported quantitative results are traceable to artifacts in this directory.
-
-- `05_methodological_addenda_and_controls/` — **Methodological clarifications and control boundaries**
-  - Documents design rationale that protects interpretation (e.g., why exploratory failure discovery is separated from protocolized measurement).
-  - Extends the narrative without changing execution protocols or scoring rules.
-
-- `tools/` — **Inspection utilities (non-required)**
-  - Helper scripts and notes for inspection, formatting checks, and artifact maintenance.
-  - These utilities do not define experimental logic, prompt content, or evaluation criteria.
+3. **Trace one number end-to-end**
+   - Follow the “Traceability recipe” section below.
 
 ---
 
-## 3) Development vs Evaluation: Why Q1–Q2 and Prompt A Matter
+## One-way data flow
 
-The experiment enforces a strict separation between **prompt development** and **held-out evaluation**.
+```
+01_experiment_design/ (questions, split, execution protocol template)
+        │
+        ▼
+02_prompt_variants/ (generator prompts used to produce outputs)
+        │
+        ▼
+04_results/01_raw_model_outputs/ (raw PDFs; immutable evidence)
+        │
+        ▼
+04_results/02_raw_judge_evaluations/ (raw judge JSON bundles)
+        │
+        ▼
+04_results/03_processed_evaluations/ (per-file records + summary_tables/*.csv)
+        │
+        ▼
+04_results/04_results_analysis.md (how grouping/aggregation is done; no new rules)
+```
 
-### Q1–Q2: Development-only (paper emphasis)
-
-- **Q1–Q2** are used exclusively to construct and refine the generation prompts.
-- They are deliberately treated as an exploratory surface to expose early failure modes (e.g., structural collapse, instruction substitution, constraint leakage).
-- Outputs from this stage are not aggregated into reported quantitative results.
-
-This separation prevents development–evaluation leakage and is central to the paper’s methodological framing.
-
-### Prompt A (00_baseline_prompt_A.txt): Exploratory failure discovery (paper emphasis)
-
-- Prompt **A** is an intentionally minimal baseline used to probe the failure surface during development.
-- Its purpose is **failure discovery**, not comparative measurement.
-- It motivates later protocolization by showing what breaks when constraint signaling is weak.
-
-### Prompt B (01_structured_prompt_B.txt): Measurement anchor
-
-- Prompt **B** is the protocolized anchor for quantitative evaluation.
-- All reported comparisons across variants are defined as controlled perturbations of Prompt B.
-
-The A/B separation is documented as a methodological control: failure discovery is decoupled from failure measurement to preserve the integrity of quantitative interpretation.
-
----
-
-## Suggested Reviewer Inspection Flow
-
-1. Read design contracts and partitioning in `01_experiment_design/`.
-2. Inspect the prompt variants and their roles in `02_prompt_variants/`.
-3. Verify validity criteria, rubric dimensions, and failure taxonomy in `03_evaluation_rules/`.
-4. Trace raw PDFs → judged records → summary tables in `04_results/`.
-5. Use `05_methodological_addenda_and_controls/` for interpretation boundaries and controls.
+Notes:
+- Raw model outputs are preserved as **PDFs** and are not edited or cleaned.
+- Processing and aggregation operate on **stored judge JSON artifacts** (not on PDFs).
 
 ---
 
-## Notes on Reproducibility
+## What is authoritative
 
-- This artifact is intended for **auditability and traceability** rather than deterministic re-execution of model inference.
-- API-driven regeneration is intentionally avoided to prevent nondeterministic reproduction paths caused by model updates and system-side changes.
+### Execution inputs
+- **Questions (authoritative):** `supplement/01_experiment_design/eval_questions_ZH.jsonl`
+- **Questions (reference translation):** `supplement/01_experiment_design/eval_questions_EN.jsonl`
+- **Prompt variants inventory (authoritative):** `supplement/02_prompt_variants/prompt_manifest.md`
+- **Executable prompt files (Chinese, used verbatim):** `supplement/02_prompt_variants/*.txt`
+
+### Evaluation contracts
+- **Only normative evaluation protocol:** `supplement/03_evaluation_rules/eval_protocol.md`
+- Judge instruction template: `supplement/03_evaluation_rules/judge_prompt.md`
+- JSON shape validation schema: `supplement/03_evaluation_rules/schema/eval_record.schema.json`
+- Scoring fields and meanings: `supplement/03_evaluation_rules/scoring_dimensions.md`
+- Valid/invalid criteria: `supplement/03_evaluation_rules/validity_criteria.md`
+- Failure labels: `supplement/03_evaluation_rules/failure_taxonomy.md`
+
+### Reported numbers
+- **Primary reporting inputs:**
+  - `supplement/04_results/03_processed_evaluations/*/summary_tables/scores_grouped.csv`
+  - `supplement/04_results/03_processed_evaluations/*/summary_tables/scores_long.csv`
+
+---
+
+## Development vs held-out evaluation
+
+The benchmark contains four questions with a fixed split:
+- **Q1–Q2:** development-only (prompt iteration / sanity checks)
+- **Q3–Q4:** held-out evaluation set used for quantitative summaries
+
+This split is specified under `supplement/01_experiment_design/`.
+
+---
+
+## Traceability recipe (how to audit a number)
+
+Pick any row in a grouped table, for example:
+
+- `supplement/04_results/03_processed_evaluations/<judge_version>/summary_tables/scores_grouped.csv`
+
+Then:
+
+1. Locate the corresponding **per-file rows** in:
+   - `supplement/04_results/03_processed_evaluations/<judge_version>/summary_tables/scores_long.csv`
+
+   Match on:
+   - `judge_version`, `generator_model`, `question_id`, `prompt_variant`, `trigger_type`
+
+2. For any `scores_long.csv` row, open the referenced **per-file record** (JSON):
+   - `supplement/04_results/03_processed_evaluations/<judge_version>/valid_evaluations/**/record_*.json`
+
+3. From that record, use `source_bundle` to open the **raw judge bundle**:
+   - `supplement/04_results/02_raw_judge_evaluations/{diagnostic|final}/<judge_version>/<source_bundle>`
+
+4. Use the `file` field to open the **raw model output PDF**:
+   - `supplement/04_results/01_raw_model_outputs/<generator_model>/<file>`
+
+This chain (grouped row → long row → record JSON → judge bundle → raw PDF) is the audit path.
+
+---
+
+## Repository map
+
+- `supplement/01_experiment_design/` — inputs and execution setup (questions, split, output layout, protocol template)
+- `supplement/02_prompt_variants/` — generator-side prompt variants (Chinese `.txt` prompts + manifest)
+- `supplement/03_evaluation_rules/` — evaluation contracts only (protocol, schema, scoring dimensions, validity criteria)
+- `supplement/04_results/` — frozen evidence and derived artifacts (raw PDFs, judge bundles, processed records, summary tables)
+- `supplement/05_methodological_addenda_and_controls/` — non-normative notes for interpretation boundaries (no new experiments)
+- `supplement/tools/` — offline utilities for inspection (no API calls; not required for reviewers)
+
+---
+
+## Language policy
+
+- **Chinese is used for execution inputs** (questions and generator prompts).
+- **English is used for evaluation contracts and documentation**.
+
+For the exact authoritative inputs, see the paths listed under “What is authoritative”.
+
+---
+
+## What reviewers do not need to run
+
+Reviewers are not expected to execute scripts.
+- Raw evidence (PDFs) and processed results (CSV/JSON) are included.
+- Tools under `supplement/tools/` are provided for optional offline inspection.
