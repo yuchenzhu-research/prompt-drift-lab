@@ -1,51 +1,67 @@
 # Experiment Design
 
-This directory defines the experimental inputs and design contracts of Prompt Drift Lab. It specifies what is evaluated, how outputs are structured, and how execution is constrained. No results or scoring logic are defined here.
+This directory defines the experimental inputs and setup documentation for Prompt Drift Lab. It records how experiments are configured, executed, and logged, without defining or interpreting any evaluation or judging rules.
 
-The design is intentionally minimal and failure-oriented: the goal is to make prompt-induced breakdowns observable, traceable, and analyzable under controlled conditions.
+---
+
+## Hard Boundary
+
+- This directory does not define, modify, or interpret any evaluation rules, including scoring scales, validity criteria, failure definitions, or judgment procedures.
+- The sole authority for evaluation and judging is `supplement/03_evaluation_rules/`.
+
+The purpose of this directory is to make experimental execution traceable and reproducible: what inputs were used, what output structure was requested, and how runs were produced and recorded.
 
 ---
 
 ## What This Directory Defines
 
-- The evaluation question set and its fixed partition
-- The required output structure enforced during generation
-- The execution protocol used to record experimental runs
-- The methodological workflow used to surface drift and failure cases
-- Terminology alignment and known threats to validity
+- Evaluation question files and their fixed partition (development vs. held-out evaluation)
+- The output structural layout requested during generation (section names and order only)
+- The execution protocol template, including run configuration and output file naming
+- Design-level workflow documentation
+- Known threats to validity and design limitations
 
-All scoring rules and judgment criteria are defined outside this directory.
+---
+
+## What This Directory Explicitly Does Not Define
+
+- Any scoring or judging rules (see `supplement/03_evaluation_rules/`)
+- Any interpretation of output quality, validity, or failure categories
+- Any post-hoc relabeling of results or metrics
+- Any results, summary tables, or analysis (see `supplement/04_results/`)
 
 ---
 
 ## Evaluation Set and Partitioning
 
-The benchmark consists of four evaluation questions with a fixed split:
+The benchmark consists of four questions with a fixed split:
 
-- **Q1–Q2** are used exclusively for prompt construction and iteration.
-- **Q3–Q4** form a held-out evaluation set used for all reported analyses.
-- No quantitative results from Q1–Q2 are reported or aggregated.
+- **Q1–Q2**: development-only prompts for iteration and sanity checks
+- **Q3–Q4**: held-out evaluation set used for all reported analyses
+- No quantitative results from Q1–Q2 are reported or aggregated
 
-This separation is enforced to prevent development–evaluation leakage and to ensure that observed behaviors reflect prompt perturbations rather than task adaptation.
+This separation is used to reduce development–evaluation leakage and to keep reported behaviors tied to prompt perturbations rather than task adaptation.
 
 ---
 
 ## Failure-Oriented Design Rationale
 
-Prompt Drift Lab treats non-compliant outputs as first-class experimental observations rather than noise. The design explicitly preserves and analyzes failure cases, including structural collapse, instruction substitution, constraint violations, and task rewrites.
+This project preserves all generated outputs as experimental observations, including cases that deviate from the requested output structure.
 
-Failure patterns are used to characterize prompt drift and to compare the robustness of prompt variants under minimal perturbations. This perspective is central to the methodological contribution of the project.
+- Raw outputs are stored without manual edits.
+- Downstream evaluation determines how such cases are handled according to the fixed evaluation protocol.
+
+This file does not enumerate failure criteria or scoring logic.
 
 ---
 
 ## Quick Navigation
 
 - Evaluation questions: `eval_questions_ZH.jsonl` (authoritative), `eval_questions_EN.jsonl` (reference translation)
-- Output structure contract: `output_schema.md`
-- Execution protocol: `experiment_protocol.yaml`
-- Experimental workflow and failure analysis: `design_five_step.md`
-- Terminology alignment: `terminology_alignment.md`
-- Threats and limitations: `threats_and_limitations.md`
+- Output layout (structure only): `output_schema.md`
+- Execution protocol (setup only): `experiment_protocol.yaml`
+- Experimental workflow description (design-level): `design_five_step.md`
+- Threats and limitations (design-level): `threats_and_limitations.md`
 
 ---
 
@@ -53,39 +69,24 @@ Failure patterns are used to characterize prompt drift and to compare the robust
 
 ### Included
 
-- Evaluation question definitions
-- Output structure schema
-- Execution protocol template
-- Experimental workflow documentation
-- Terminology alignment
-- Known threats and limitations
+- Question definitions and the dev/eval split
+- Structural output layout specification
+- Execution protocol template and naming conventions
+- Workflow documentation at the design level
+- Design-level threats and limitations
 
 ### Excluded
 
-- Scoring and judging rules (`03_evaluation_rules/`)
-- Prompt text and variants (`02_prompt_variants/`)
-- Results, tables, or analysis (`04_results/`)
+- Evaluation and judging rules: `supplement/03_evaluation_rules/`
+- Prompt text and perturbation definitions: `supplement/02_prompt_variants/`
+- Results, summary tables, and analysis: `supplement/04_results/`
 
 ---
 
 ## Repository Connections
 
-- Prompt variants and perturbations: `02_prompt_variants/`
-- Scoring rules and evaluation rubrics: `03_evaluation_rules/`
-- Results, tables, and analysis: `04_results/`
+- Prompt variants and perturbations: `supplement/02_prompt_variants/`
+- Evaluation protocol (single authority): `supplement/03_evaluation_rules/`
+- Results and analysis outputs: `supplement/04_results/`
 
-## Methodological Addenda and Controls
-
-Additional methodological checks, controls, and robustness analyses are documented in:
-
-- `05_methodological_addenda_and_controls/`
-
-These materials extend the core protocol without altering the primary evaluation setup or reported results.
-
-## Tools and Utilities
-
-Utility scripts and inspection helpers used for data handling and artifact management are located in:
-
-- `tools/`
-
-These tools do not define experimental logic, scoring rules, or evaluation criteria, and are not required to interpret reported results.
+Additional methodological checks and controls are treated as addenda and do not alter the held-out evaluation setup or the fixed evaluation protocol.

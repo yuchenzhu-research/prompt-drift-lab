@@ -1,75 +1,48 @@
+# experiment_protocol.yaml
+# Scope: experimental setup only
+# This file MUST NOT define or interpret any evaluation or scoring rules.
+
 stages:
   development:
     questions: [Q1, Q2]
-    use: prompt iteration only
+    purpose: prompt iteration and sanity checking
     reported: false
-    log: prompt_dev_log.md
+    artifacts:
+      - prompt_dev_log.md
 
   evaluation:
     questions: [Q3, Q4]
-    use: quantitative evaluation
+    purpose: output generation for downstream evaluation
     reported: true
 
 experiment:
   bundle_size: 16
   questions: [Q3, Q4]
-  variants: [baseline, long, weak, conflict]
-  trigger_types: [implicit, explicit]
-  file_template: q{question}_{variant}_{trigger}.pdf
+  variants:
+    - baseline
+    - long
+    - weak
+    - conflict
+  trigger_types:
+    - implicit
+    - explicit
+  output_files:
+    naming_template: q{question}_{variant}_{trigger}.pdf
 
 output_contract:
+  description: >
+    This contract specifies the expected structural layout of model outputs.
+    It does not define task semantics, quality criteria, or evaluation logic.
+    Any deviation from this contract is handled exclusively by the
+    evaluation protocol.
   sections:
     - fact snapshot
     - chatgpt search instructions
     - gemini deep research instructions
-  snapshot:
-    max_chars: 50
-    constraints:
-      - factual_only
-      - no_explanation
 
-scoring:
-  scale: [0, 2]
-  dimensions:
-    structure:
-      2: correct sections and order
-      1: minor structural issues
-      0: structure broken
-    snapshot:
-      2: within length, factual
-      1: length or content violation
-      0: missing or invalid
-    actionability:
-      2: directly executable
-      1: executable but unclear
-      0: not executable
-    completeness:
-      2: mechanism, structure, diagnostics
-      1: one aspect missing
-      0: not executable
-    drift:
-      2: no significant drift
-      1: drift signals present
-      0: structural collapse
-
-evidence:
-  required: true
-  per_dimension: true
-  signals:
-    - preamble_nonspace_chars
-
-failure_handling:
-  taxonomy: supplement/03_evaluation_rules/failure_taxonomy.md
-
-report_schema:
-  top_level:
-    - bundle_meta
-    - per_file_scores
-    - aggregates
-    - final_notes
-  per_file:
-    - file
-    - scores
-    - total
-    - evidence
-    - notes
+evaluation_reference:
+  authority: supplement/03_evaluation_rules
+  note: >
+    All scoring scales, validity criteria, failure definitions, and
+    judgment procedures are defined exclusively in the evaluation
+    rules directory and are not duplicated here.

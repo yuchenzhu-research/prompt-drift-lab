@@ -1,34 +1,45 @@
 ## Output Schema
 
-This document defines the required output structure for all evaluated model responses. The schema specifies structural constraints only and does not define task semantics or evaluation criteria.
+This document specifies the **expected structural layout** of model outputs used in the experiment.
+
+**Scope / Non-goals**
+- This file defines **structure only** (section names and order).
+- This file does **not** define or interpret evaluation rules (scales, validity criteria, failure definitions, or judgment procedures).
+- All evaluation logic is defined **exclusively** in `supplement/03_evaluation_rules/`.
 
 ---
 
-### Global Constraints
+### Required Top-level Sections
 
-An evaluated output MUST satisfy all of the following:
+An output is expected to contain **exactly three** top-level sections, appearing **once each** and in the following order:
 
-1. Exactly three top-level sections, in the order listed below.
-2. No additional headings, preambles, or trailing text.
-3. The output must not directly answer the original question.
+1. `fact snapshot`
+2. `chatgpt search instructions`
+3. `gemini deep research instructions`
 
----
-
-### Section Structure
-
-1. **fact snapshot**  
-   A concise factual statement (≤ 50 characters). No explanation or interpretation.
-
-2. **chatgpt search instructions**  
-   Executable instructions for online search and synthesis.
-
-3. **gemini deep research instructions**  
-   Executable instructions for broad literature and mechanism exploration.
+**Section titles are expected to match the labels above.**
 
 ---
 
-### Notes
+### Section Intent
 
-- The schema enforces structure only; content correctness is evaluated separately.
-- Field names and section labels follow the conventions used in result tables and evaluation protocol.
-- Minor preambles or extraneous text may be recorded as drift if the required section structure remains identifiable.
+- **fact snapshot**: a short snapshot statement.
+- **chatgpt search instructions**: instructions for web searching and synthesis.
+- **gemini deep research instructions**: instructions for broader literature-style exploration.
+
+> Note: Any constraints beyond this layout (e.g., length limits, content constraints, schema violation handling) are specified and adjudicated only by the evaluation protocol in `supplement/03_evaluation_rules/`.
+
+---
+
+### Minimal Template
+
+```text
+## fact snapshot
+...
+
+## chatgpt search instructions
+...
+
+## gemini deep research instructions
+...
+```
