@@ -1,26 +1,9 @@
 {
-  "judge_version": "v1_paraphrase_judge",
-  "method": "cross_model",
-  "source_bundle": "judge_gemini_bundle_chatgpt.json",
   "bundle_meta": {
-    "total_files": 16,
     "evaluated_at": "2026-01-14",
-    "judge_role": "Strict Research-grade LLM-as-Judge"
+    "judge_role": "Strict Research-grade LLM-as-Judge",
+    "total_files": 16
   },
-  "judge_model": "gemini",
-  "generator_model": "chatgpt",
-  "file": "q3_baseline_explicit.pdf",
-  "question_id": "q3",
-  "prompt_variant": "baseline",
-  "trigger_type": "explicit",
-  "scores": {
-    "A_structure": 2,
-    "B_snapshot_constraint": 2,
-    "C_actionability": 2,
-    "D_completeness": 2,
-    "E_drift_failure": 0
-  },
-  "total": null,
   "evidence": {
     "A_structure": "三段式结构满足",
     "B_snapshot_constraint": "模型仍可能偏离指定格式 [cite: 208]",
@@ -28,5 +11,22 @@
     "D_completeness": "提供实验协议与写作要点 [cite: 217]",
     "E_drift_failure": "对齐良好"
   },
-  "notes": null
+  "file": "q3_baseline_explicit.pdf",
+  "generator_model": "chatgpt",
+  "judge_model": "gemini",
+  "judge_version": "v1_paraphrase_judge",
+  "method": "cross_model",
+  "notes": null,
+  "prompt_variant": "baseline",
+  "question_id": "q3",
+  "scores": {
+    "A_structure": 2,
+    "B_snapshot_constraint": 2,
+    "C_actionability": 2,
+    "D_completeness": 2,
+    "E_drift_failure": 0
+  },
+  "source_bundle": "judge_gemini_bundle_chatgpt.json",
+  "total": null,
+  "trigger_type": "explicit"
 }

@@ -10,54 +10,54 @@ Invalid evaluations are **excluded from all quantitative aggregation and summary
 
 ## Overview
 
-- **Location**: `supplement/04_results/02_cross_model_evaluation/invalid_evaluations/`
-- **Purpose**: to summarize evaluation records that fail **protocol-level validity checks** and therefore cannot be reliably aggregated
+- **Location**: `supplement/04_results/03_processed_evaluations/v0_baseline_judge/invalid_evaluations/`
+- **Purpose**: summarize evaluation records that fail **protocol-level validity checks** and therefore cannot be aggregated
 - **Role**: descriptive and diagnostic; not normative
 
 ---
 
 ## What Counts as “Invalid”
 
-An evaluation record is classified as **invalid** when the judge fails to execute the evaluation contract in a way that is **structurally auditable**.
+An evaluation record is classified as **invalid** when the judge output cannot be parsed, aligned, or verified under the evaluation contract.
 
-Invalid evaluations are **not low-scoring results**. Low scores (including `0`) correspond to valid evaluations under the protocol. An invalid evaluation is one that cannot be parsed, aligned, or verified under the evaluation contract, regardless of apparent answer quality.
+Invalid evaluations are **not low-scoring results**. A score of `0` is a valid outcome. Invalid records are excluded solely due to **structural or contractual violations**, independent of apparent answer quality.
 
 ---
 
 ## Relation to Failure Flags
 
-Each invalid record in this directory is marked using one or more **failure flags** recorded in the evaluation bundle (e.g., `PROTOCOL_VIOLATION`, `UNPARSABLE_OUTPUT`).
+Each invalid record is marked using one or more **failure flags** recorded in the evaluation bundle (e.g., `PROTOCOL_VIOLATION`, `UNPARSABLE_OUTPUT`).
 
-These flags are defined in:
+Failure flags are defined in:
 
 - `supplement/03_evaluation_rules/failure_taxonomy.md`
 
-Failure flags **do not replace scoring dimensions**. They explain *why* an evaluation record is excluded from aggregation.
+These flags **do not replace scoring dimensions**. They record *why* a record is excluded from aggregation.
 
 ---
 
 ## Invalid Case Taxonomy
 
-For reporting and inspection, invalid records are grouped into the following **narrative categories**. These categories are *descriptive* and may map to multiple failure flags.
+For reporting and inspection, invalid records are grouped into the following categories. These categories are **descriptive**, not normative.
 
 ### A. Schema / Format Violation
 
 - Missing required JSON fields
-- Incorrect data types (e.g., string instead of number)
-- Extra free-form text outside the JSON object
-- Broken or non-parseable JSON
+- Incorrect data types
+- Extra text outside the JSON object
+- Non-parseable JSON
 
-**Common flags**: `UNPARSABLE_OUTPUT`
+Common flag: `UNPARSABLE_OUTPUT`
 
 ---
 
 ### B. Instruction Deviation
 
-- Output does not follow the specified evaluation contract
-- Required dimensions are skipped, merged, or replaced
-- The judge reframes the task into advice, critique, or meta-level discussion
+- Output does not follow the evaluation contract
+- Required dimensions are skipped or replaced
+- The judge reframes the task (e.g., advisory or meta commentary)
 
-**Common flags**: `PROTOCOL_VIOLATION`
+Common flag: `PROTOCOL_VIOLATION`
 
 ---
 
@@ -65,9 +65,9 @@ For reporting and inspection, invalid records are grouped into the following **n
 
 - Assigned scores contradict the accompanying rationale
 - Rationale does not correspond to the evaluated content
-- Internally inconsistent or self-contradictory judgments
+- Internal contradictions within a single record
 
-**Common flags**: `INTERNAL_INCONSISTENCY`, `CONTEXT_MISALIGNMENT`
+Common flags: `INTERNAL_INCONSISTENCY`, `CONTEXT_MISALIGNMENT`
 
 ---
 
@@ -76,43 +76,47 @@ For reporting and inspection, invalid records are grouped into the following **n
 - Output terminates before completion
 - Only a subset of required dimensions is returned
 
-**Common flags**: `INCOMPLETE_COVERAGE`
+Common flag: `INCOMPLETE_COVERAGE`
 
 ---
 
 ### E. File-Level Corruption
 
 - Empty files
-- Encoding errors (e.g., not decodable as UTF-8)
+- Encoding errors
 - Files that are not valid JSON
 
-**Common flags**: *(reserved; rarely observed)*
+Common flag: *(reserved; rarely observed)*
 
 ---
 
 ## Documented Invalid Cases
 
-The cases below are **illustrative summaries** rather than an exhaustive listing of individual files.
+The cases below are **illustrative summaries** rather than an exhaustive listing.
 
 ### Case 01 — Protocol Violation via Role Drift
 
 - Narrative category: B
 - Failure flag(s): `PROTOCOL_VIOLATION`
-- Location: `supplementent/04_results/02_cross_model_evalutaion/invalid_evaluations/main_method_cross_model/`
-- Description: the judge response reframes the evaluation task into advisory or diagnostic commentary, replacing the required evaluation structure.
+- Location: `supplement/04_results/03_processed_evaluations/v0_baseline_judge/invalid_evaluations/main_method_cross_model/`
+- Description: the judge output departs from the required evaluation structure and shifts into advisory or diagnostic commentary.
+
+---
 
 ### Case 02 — Partial Output / Truncation
 
 - Narrative category: D
 - Failure flag(s): `INCOMPLETE_COVERAGE`
-- Location: `supplementent/04_results/02_cross_model_evalutaion/invalid_evaluations/supporting_method_self_eval/`
-- Description: the output terminates before all required dimensions are evaluated, resulting in incomplete records.
+- Location: `supplement/04_results/03_processed_evaluations/v0_baseline_judge/invalid_evaluations/supporting_method_self_eval/`
+- Description: the output terminates before all required dimensions are evaluated.
+
+---
 
 ### Case 03 — Instruction Deviation with Inconsistency
 
 - Narrative category: B, C
 - Failure flag(s): `PROTOCOL_VIOLATION`, `INTERNAL_INCONSISTENCY`
-- Location: `supplementent/04_results/02_cross_model_evalutaion/invalid_evaluations/main_method_cross_model/`
+- Location: `supplement/04_results/03_processed_evaluations/v0_baseline_judge/invalid_evaluations/main_method_cross_model/`
 - Description: scores are present, but rationales do not align with the evaluated content or violate the evaluation contract.
 
 ---
@@ -120,15 +124,15 @@ The cases below are **illustrative summaries** rather than an exhaustive listing
 ## Handling Policy
 
 - Invalid evaluations are **excluded from aggregate scoring** and summary tables.
-- Counts of invalid records are reported separately for transparency.
-- No manual correction, reinterpretation, or reclassification is applied.
+- Counts of invalid records are reported separately.
+- No manual correction or reinterpretation is applied.
 
 ---
 
 ## Reproducibility Notes
 
-- This report references **directories and categories**, not individual filenames.
-- No absolute paths or environment-specific assumptions are used.
+- This report references directories and categories, not individual filenames.
+- Paths correspond to directories present in the submitted artifact.
 - The document supports auditability of exclusion decisions rather than completeness.
 
 ---
@@ -136,5 +140,5 @@ The cases below are **illustrative summaries** rather than an exhaustive listing
 ## Limitations
 
 - This report does not attempt to attribute root causes beyond protocol-level classification.
-- Narrative categories may overlap across cases.
+- Categories may overlap across cases.
 - The set of invalid records may grow as additional evaluations are run.

@@ -8,7 +8,7 @@ It is an index of files and their roles.
 
 ---
 
-## One-way data flow (3 layers)
+## One-way data flow
 
 1) **Raw model outputs** → `01_raw_model_outputs/` (`*.pdf`)
 2) **Raw judge evaluations** → `02_raw_judge_evaluations/` (judge bundles + prompt text + `run_meta.json`)
@@ -33,14 +33,26 @@ Judge-run directories (examples):
 
 ---
 
-## Non-scope (what is NOT defined here)
+## Excluded records (v2)
+
+Some raw judge bundles under `final/v2_schema_strict_judge/` are excluded during processing.
+
+- Reason: the bundle uses a `file_name` field instead of the schema-defined `file` field, causing the record to fail schema-aligned ingestion.
+- Handling: such records are written to `03_processed_evaluations/v2_schema_strict_judge/summary_tables/excluded_records.jsonl`.
+- Scope: excluded records are **not used** in any aggregation or summary tables.
+
+No manual correction or reinterpretation is applied to excluded records.
+
+---
+
+## Non-scope
 
 - **Evaluation rules / validity definitions** live in `supplement/03_evaluation_rules/`.
 - **Deterministic processing scripts** live under `tools/`.
 
 ---
 
-## Entry points (where to start)
+## Entry points
 
 **Processed summary tables (CSV) — primary reporting inputs**
 - `03_processed_evaluations/*/summary_tables/scores_grouped.csv`
@@ -62,7 +74,7 @@ Judge-run directories (examples):
 
 ---
 
-## Directory map (shape only)
+## Directory map
 
 ```
 04_results/
