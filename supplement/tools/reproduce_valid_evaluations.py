@@ -1,163 +1,197 @@
 #!/usr/bin/env python3
-"""AUTHORITATIVE REPRODUCTION SCRIPT (JSON-ONLY)
+# -*- coding: utf-8 -*-
 
-Purpose
-- Read stored judge JSON bundles under:
-    supplement/04_results/02_raw_judge_evaluations/
-      - diagnostic/v0_baseline_judge/
-      - final/v1_paraphrase_judge/
-      - final/v2_schema_strict_judge/
-- Materialize processed artifacts under:
-    supplement/04_results/03_processed_evaluations/<judge_version>/
-      - valid_evaluations/**/record_*.json
-      - summary_tables/scores_long.csv
-      - summary_tables/scores_grouped.csv
-      - summary_tables/excluded_records.jsonl (only if needed)
+"""
+Reproduce valid evaluation summary tables from processed record JSONs.
 
-Hard constraints
-- No PDF parsing.
-- No placeholder self-evaluation.
-- Consume stored judge JSON artifacts only.
-- Deterministic: identical inputs produce identical outputs.
+Behavior:
+- If --judge_version is provided:
+    process only that version.
+- If not provided:
+    automatically process all judge_version directories under
+    supplement/04_results/03_processed_evaluations/
 
-Validity / exclusion note
-- Ingestion requires per-file entries to contain schema-aligned keys `file` and `scores`.
-- Entries that use `file_name` instead of the schema-defined `file` are treated as invalid for ingestion,
-  recorded to `summary_tables/excluded_records.jsonl`, and excluded from aggregation.
-- This behavior is intentional and contract-aligned (see supplement/03_evaluation_rules/).
-
-Notes
-- Judge / generator model identifiers are parsed from the bundle file name when present
-  (judge_<judge>_bundle_<generator>.json). If not matched, identifiers are set to "unknown".
-- File labels are preserved verbatim as identifiers; any file-name parsing is used only to
-  materialize grouping keys and does not affect score computation.
+Guarantees:
+- Raw judge bundles are NOT modified.
+- Per-dimension scores are NOT modified.
+- `total` is treated as a derived field and deterministically backfilled.
 """
 
+import argparse
 import json
-import os
 from pathlib import Path
-from typing import Dict, Any, Iterable, List
-
-import csv
-
-# -----------------------------
-# Paths (relative to repo root)
-# -----------------------------
-ROOT = Path(__file__).resolve().parents[2]
-RAW_ROOT = ROOT / "supplement" / "04_results" / "02_raw_judge_evaluations"
-OUT_ROOT = ROOT / "supplement" / "04_results" / "03_processed_evaluations"
-
-# -----------------------------
-# Utilities
-# -----------------------------
-
-def iter_json_files(base: Path) -> Iterable[Path]:
-    for p in base.rglob("*.json"):
-        if p.is_file():
-            yield p
+from typing import Any, Dict, List
 
 
-def load_json(path: Path) -> Any:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+# -------------------------
+# IO helpers
+# -------------------------
 
-
-# -----------------------------
-# Core processing
-# -----------------------------
-
-def process_bundle(bundle_path: Path) -> Dict[str, Any]:
-    data = load_json(bundle_path)
-
-    bundle_meta = data.get("bundle_meta", {})
-    per_file_scores = data.get("per_file_scores", [])
-
-    valid_records: List[Dict[str, Any]] = []
-    excluded: List[Dict[str, Any]] = []
-
-    for item in per_file_scores:
-        file_label = item.get("file")  # NOTE: `file_name` is not accepted; such items are logged to excluded_records.jsonl
-        scores = item.get("scores")
-
-        if not file_label or not scores:
-            excluded.append({
-                "bundle": bundle_path.name,
-                "reason": "bad_item: missing file or scores",
-                "item": item,
-            })
-            continue
-
-        record = {
-            "bundle": bundle_path.name,
-            "bundle_meta": bundle_meta,
-            "file": file_label,
-            "scores": scores,
-            "total": item.get("total"),
-            "evidence": item.get("evidence"),
-        }
-        valid_records.append(record)
-
-    return {
-        "valid": valid_records,
-        "excluded": excluded,
-    }
-
-
-# -----------------------------
-# Aggregation
-# -----------------------------
-
-def aggregate(valid_records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    rows: List[Dict[str, Any]] = []
-    for r in valid_records:
-        row = {
-            "bundle": r.get("bundle"),
-            "file": r.get("file"),
-        }
-        scores = r.get("scores", {})
-        for k, v in scores.items():
-            row[k] = v
-        rows.append(row)
-    return rows
-
-
-def write_csv(path: Path, rows: List[Dict[str, Any]]):
+def write_csv(path: Path, rows: List[Dict[str, Any]]) -> None:
+    import csv
     if not rows:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", newline="", encoding="utf-8") as f:
+    with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         for r in rows:
             writer.writerow(r)
 
 
-# -----------------------------
+def write_jsonl(path: Path, rows: List[Dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+
+# -------------------------
+# Aggregation
+# -------------------------
+
+def aggregate(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    rows = []
+
+    for r in records:
+        scores = r.get("scores", {})
+
+        # derived total (safe & deterministic)
+        total = r.get("total")
+        if total is None and isinstance(scores, dict):
+            total = sum(int(v) for v in scores.values() if v is not None)
+
+        rows.append({
+            "judge_version": r.get("judge_version"),
+            "source_bundle": r.get("source_bundle"),
+            "judge_model": r.get("judge_model"),
+            "generator_model": r.get("generator_model"),
+            "file": r.get("file"),
+            "question_id": r.get("question_id"),
+            "prompt_variant": r.get("prompt_variant"),
+            "trigger_type": r.get("trigger_type"),
+            "A_structure": scores.get("A_structure"),
+            "B_snapshot_constraint": scores.get("B_snapshot_constraint"),
+            "C_actionability": scores.get("C_actionability"),
+            "D_completeness": scores.get("D_completeness"),
+            "E_drift_failure": scores.get("E_drift_failure"),
+            "total": total,
+        })
+
+    return rows
+
+
+def group_scores(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    from collections import defaultdict
+
+    groups = defaultdict(list)
+    for r in rows:
+        key = (
+            r["judge_version"],
+            r["generator_model"],
+            r["question_id"],
+            r["prompt_variant"],
+            r["trigger_type"],
+        )
+        groups[key].append(r)
+
+    grouped = []
+    for (jv, gm, qid, pv, tt), items in groups.items():
+        agg = {
+            "judge_version": jv,
+            "generator_model": gm,
+            "question_id": qid,
+            "prompt_variant": pv,
+            "trigger_type": tt,
+            "n": len(items),
+        }
+        for k in [
+            "A_structure",
+            "B_snapshot_constraint",
+            "C_actionability",
+            "D_completeness",
+            "E_drift_failure",
+            "total",
+        ]:
+            vals = [i[k] for i in items if i[k] is not None]
+            agg[k] = sum(vals) / len(vals) if vals else None
+        grouped.append(agg)
+
+    return grouped
+
+
+# -------------------------
+# Per-version processing
+# -------------------------
+
+def process_one_version(judge_version: str) -> None:
+    base = (
+        Path("supplement/04_results/03_processed_evaluations")
+        / judge_version
+        / "valid_evaluations"
+    )
+
+    if not base.exists():
+        print(f"[SKIP] {judge_version}: no valid_evaluations/")
+        return
+
+    valid, excluded = [], []
+
+    for p in base.rglob("record_*.json"):
+        d = json.loads(p.read_text(encoding="utf-8"))
+        if d.get("is_valid", True):
+            valid.append(d)
+        else:
+            excluded.append(d)
+
+    rows = aggregate(valid)
+    grouped = group_scores(rows)
+
+    out_root = (
+        Path("supplement/04_results/03_processed_evaluations")
+        / judge_version
+        / "summary_tables"
+    )
+    out_root.mkdir(parents=True, exist_ok=True)
+
+    write_csv(out_root / "scores_long.csv", rows)
+    write_csv(out_root / "scores_grouped.csv", grouped)
+    write_jsonl(out_root / "excluded_records.jsonl", excluded)
+
+    run_meta = {
+        "judge_version": judge_version,
+        "n_valid": len(valid),
+        "n_excluded": len(excluded),
+        "note": "Derived tables regenerated from processed records; total is computed as sum of per-dimension scores.",
+    }
+    (out_root / "run_meta.json").write_text(
+        json.dumps(run_meta, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    print(f"[OK] {judge_version}: wrote summary_tables/")
+
+
+# -------------------------
 # Main
-# -----------------------------
+# -------------------------
 
-def main():
-    OUT_ROOT.mkdir(parents=True, exist_ok=True)
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--judge_version",
+        help="Optional. If omitted, all judge versions will be processed.",
+    )
+    args = parser.parse_args()
 
-    all_valid: List[Dict[str, Any]] = []
-    all_excluded: List[Dict[str, Any]] = []
+    root = Path("supplement/04_results/03_processed_evaluations")
 
-    for bundle_path in iter_json_files(RAW_ROOT):
-        result = process_bundle(bundle_path)
-        all_valid.extend(result["valid"])
-        all_excluded.extend(result["excluded"])
-
-    # Write aggregated tables
-    rows = aggregate(all_valid)
-    write_csv(OUT_ROOT / "scores_long.csv", rows)
-
-    # Write excluded records if any
-    if all_excluded:
-        excl_path = OUT_ROOT / "excluded_records.jsonl"
-        excl_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(excl_path, "w", encoding="utf-8") as f:
-            for item in all_excluded:
-                f.write(json.dumps(item, ensure_ascii=False) + "\n")
+    if args.judge_version:
+        process_one_version(args.judge_version)
+    else:
+        for d in sorted(root.iterdir()):
+            if d.is_dir() and d.name.startswith("v"):
+                process_one_version(d.name)
 
 
 if __name__ == "__main__":

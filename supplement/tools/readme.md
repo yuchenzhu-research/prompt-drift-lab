@@ -17,21 +17,20 @@ This is the **primary reproduction entry point** used to regenerate the reported
 
 **Inputs (read-only):**
 ```
-supplement/04_results/02_raw_judge_evaluations/
+supplement/04_results/03_processed_evaluations/*/valid_evaluations/
 ```
 
 **Outputs (materialized):**
 ```
-supplement/04_results/03_processed_evaluations/
+supplement/04_results/03_processed_evaluations/*/summary_tables/
 ```
 
 **Guarantees**
 - Deterministic execution (same inputs → same outputs)
-- Consumes judge JSON bundles / records only
+- Consumes per-file record JSONs only (does not read raw judge bundles or PDFs)
 - File names are preserved verbatim as identifiers; any parsing (if present) is used **only** to materialize grouping keys and **never** affects validity or scoring
 
 **Materialized products**
-- Per-file evaluation records under `*/valid_evaluations/`
 - Aggregated tables under `*/summary_tables/` (e.g., `scores_long.csv`, `scores_grouped.csv`)
 
 ---
@@ -72,4 +71,7 @@ to reproduce the reported result tables.
 
 ## Reproducibility statement
 
-Given identical stored judge JSON artifacts under `supplement/04_results/02_raw_judge_evaluations/`, running `reproduce_valid_evaluations.py` reproduces the processed records and summary tables under `supplement/04_results/03_processed_evaluations/` deterministically.
+Given identical per-file record JSONs under
+` supplement/04_results/03_processed_evaluations/*/valid_evaluations/ `,
+running `reproduce_valid_evaluations.py` regenerates
+`*/summary_tables/` deterministically and does **not** modify any input records.
