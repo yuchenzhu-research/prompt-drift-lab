@@ -67,4 +67,4 @@ traceability across raw outputs, judged records, and aggregated summaries.
 ## Relation to Evaluation Rules
 
 This directory contains only executable prompt inputs. Evaluation procedures and
-definitions are specified separately under `03_evaluation_rules/`.
+definitions are specified separately under `/supplementent/evaluation_rules/`.
