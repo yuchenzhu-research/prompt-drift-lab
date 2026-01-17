@@ -27,6 +27,6 @@
     "E_drift_failure": 0
   },
   "source_bundle": "judge_gemini_bundle_chatgpt.json",
-  "total": null,
+  "total": 8,
   "trigger_type": "implicit"
 }

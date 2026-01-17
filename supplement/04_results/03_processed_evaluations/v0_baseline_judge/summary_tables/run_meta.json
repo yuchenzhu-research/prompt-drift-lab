@@ -1,6 +1,6 @@
 {
   "judge_version": "v0_baseline_judge",
-  "snapshot_allow_extension": false,
-  "snapshot_contract_id": "SC_50_NOEXT",
-  "snapshot_word_limit": 50
+  "n_valid": 96,
+  "n_excluded": 0,
+  "note": "Derived tables regenerated from processed records; total is computed as sum of per-dimension scores."
 }

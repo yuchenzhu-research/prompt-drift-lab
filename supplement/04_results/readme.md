@@ -1,100 +1,50 @@
-# 04_results — Artifact Map (no rules, no code)
+# supplement/04_results — Evaluation results and derived artifacts
 
-This directory is a **data map** of realized artifacts produced by the evaluation pipeline.
-It is an index of files and their roles.
+This directory contains all **evaluation evidence and derived results** used in the paper.  
+It is organized to support **direct inspection**, **deterministic regeneration**, and **one-way traceability** from summary tables back to raw artifacts.
 
-- **No evaluation rules** are defined here.
-- **No processing code** is stored here.
+---
+
+## Directory overview
+
+- `01_raw_model_outputs/`  
+  Frozen model outputs evaluated in this study (PDF files). These files are not modified or re-parsed.
+
+- `02_raw_judge_evaluations/`  
+  Preserved judge outputs (JSON bundles) produced directly from evaluating the raw model outputs.
+
+- `03_processed_evaluations/`  
+  Deterministic, derived artifacts generated from raw judge bundles, including:
+  - per-file audit records (`record_*.json`)
+  - paper-cited summary tables (`scores_long.csv`, `scores_grouped.csv`)
+
+- `04_results_analysis.md`  
+  Aggregated observations and analysis notes derived strictly from the summary tables.
 
 ---
 
 ## One-way data flow
 
-1) **Raw model outputs** → `01_raw_model_outputs/` (`*.pdf`)
-2) **Raw judge evaluations** → `02_raw_judge_evaluations/` (judge bundles + prompt text + `run_meta.json`)
-3) **Processed evaluations** → `03_processed_evaluations/` (per-record JSON + summary tables)
-
-This pipeline is **one-way**: raw artifacts are preserved, and downstream artifacts remain traceable to upstream files.
-
----
-
-## diagnostic vs final (raw judge evaluations)
-
-`02_raw_judge_evaluations/` is split by label:
-
-- `diagnostic/`: exploratory runs retained **only for diagnostic reference** (not used for final claims)
-- `final/`: runs used for reported results and downstream aggregation
-
-Judge-run directories (examples):
-
-- `diagnostic/v0_baseline_judge/`
-- `final/v1_paraphrase_judge/`
-- `final/v2_schema_strict_judge/`
-
----
-
-## Excluded records (v2)
-
-Some raw judge bundles under `final/v2_schema_strict_judge/` are excluded during processing.
-
-- Reason: the bundle uses a `file_name` field instead of the schema-defined `file` field, causing the record to fail schema-aligned ingestion.
-- Handling: such records are written to `03_processed_evaluations/v2_schema_strict_judge/summary_tables/excluded_records.jsonl`.
-- Scope: excluded records are **not used** in any aggregation or summary tables.
-
-No manual correction or reinterpretation is applied to excluded records.
-
----
-
-## Non-scope
-
-- **Evaluation rules / validity definitions** live in `supplement/03_evaluation_rules/`.
-- **Deterministic processing scripts** live under `tools/`.
-
----
-
-## Entry points
-
-**Processed summary tables (CSV) — primary reporting inputs**
-- `03_processed_evaluations/*/summary_tables/scores_grouped.csv`
-- `03_processed_evaluations/*/summary_tables/scores_long.csv`
-- `03_processed_evaluations/*/summary_tables/run_meta.json`
-- `03_processed_evaluations/v2_schema_strict_judge/summary_tables/excluded_records.jsonl`
-
-**Processed per-record JSON — audit trail**
-- `03_processed_evaluations/*/valid_evaluations/**/record_*.json`
-
-**Raw judge bundles — preserved inputs to processing**
-- `02_raw_judge_evaluations/{diagnostic|final}/*/judge_*_bundle_*.json`
-
-**Raw model outputs (PDF) — immutable generation snapshot**
-- `01_raw_model_outputs/<generator_model>/*.pdf`
-
-**Analysis note**
-- `03_results_analysis.md` (describes grouping/aggregation rules; does not define evaluation rules)
-
----
-
-## Directory map
-
 ```
-04_results/
-├── 01_raw_model_outputs/
-│   ├── anthropic_claude-sonnet-4.5_extended-thinking/   (*.pdf)
-│   ├── google_gemini-3-pro/                             (*.pdf)
-│   └── openai_gpt-5.2_extended-thinking/                (*.pdf)
-│
-├── 02_raw_judge_evaluations/
-│   ├── diagnostic/
-│   │   └── v0_baseline_judge/                           (judge bundles + prompt text + run_meta.json)
-│   └── final/
-│       ├── v1_paraphrase_judge/                         (judge bundles + prompt text + run_meta.json)
-│       └── v2_schema_strict_judge/                      (judge bundles + prompt text + run_meta.json)
-│
-├── 03_processed_evaluations/
-│   ├── v0_baseline_judge/                               (diagnostic outputs)
-│   ├── v1_paraphrase_judge/                             (final outputs)
-│   └── v2_schema_strict_judge/                          (final outputs)
-│
-├── 03_results_analysis.md
-└── readme.md
+01_raw_model_outputs (PDF)
+        ↓
+02_raw_judge_evaluations (JSON bundles)
+        ↓
+03_processed_evaluations (records + summary_tables)
+        ↓
+04_results_analysis.md
 ```
+
+This flow is strictly one-directional. No later stage feeds back into an earlier stage.
+
+---
+
+## Scope and guarantees
+
+- All artifacts under this directory are frozen and versioned.
+- No evaluation rules are defined here (see `/supplement/03_evaluation_rules/`).
+- All reported results in the paper cite files under `03_processed_evaluations/summary_tables/`.
+- Reproduction scripts are provided in `/supplement/tools/`, but execution is **not required** to audit the results.
+- Processed evaluation records are regenerated only when input artifacts or validity conditions change; otherwise, previously validated records are preserved.
+
+This structure ensures that reviewers can verify reported numbers without executing code.

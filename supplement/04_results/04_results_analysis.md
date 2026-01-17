@@ -1,115 +1,108 @@
-# 04 Results — Analysis
+# supplement/04_results/04_results_analysis
 
-## Scope
+This note defines how reported result tables are derived from stored evaluation artifacts.
 
-This directory contains **analysis artifacts derived from processed evaluation results**.
-It specifies how evaluation records are grouped and aggregated for reporting.
-
-This directory **does not introduce or modify evaluation rules**.
-All analysis steps operate strictly on artifacts produced under the evaluation protocol.
+- It does **not** define or modify evaluation rules.
+- It reads only stored evaluation records and produces **derived** summary tables.
 
 ---
 
-## Authoritative Input Artifacts
+## Inputs
 
-Analysis operates exclusively on **processed evaluation records** located under:
+Primary aggregation inputs (per-file processed records):
 
-```
-supplement/04_results/03_processed_evaluations/
-```
+- `/supplement/04_results/03_processed_evaluations/<judge_version>/valid_evaluations/record_*.json`
 
-These records are generated deterministically from stored judge outputs under:
+Upstream evidence (not recomputed here):
 
-```
-supplement/04_results/02_raw_judge_evaluations/
-```
-
-No analysis step reads from raw model outputs or PDF files.
+- `/supplement/04_results/02_raw_judge_evaluations/` (raw judge bundles)
+- `/supplement/04_results/01_raw_model_outputs/` (raw generator PDFs)
 
 ---
 
-## Validity and Record Selection
+## Record inclusion
 
-Only evaluation records that satisfy the structural and protocol-level validity criteria
-specified in `supplement/03_evaluation_rules/` are included in quantitative aggregation.
+Numeric aggregation includes only records that satisfy validity criteria defined under:
 
-Records flagged as invalid (e.g., `PROTOCOL_VIOLATION`, `UNPARSABLE_OUTPUT`) are excluded
-from numeric summaries and retained solely for diagnostic inspection.
+- `/supplement/03_evaluation_rules/`
+
+Records flagged invalid are excluded from numeric summaries and preserved for inspection.
+
+Excluded record listings are stored at:
+
+- `/supplement/04_results/03_processed_evaluations/<judge_version>/summary_tables/excluded_records.jsonl`
+
+Previously validated records are treated as **immutable inputs** to aggregation. Analyses assume a fixed set of validated records and do not modify or overwrite them.
 
 ---
 
-## Analysis Units and Grouping
+## Grouping keys
 
-Results are grouped by explicit record fields:
+Summary statistics are grouped by explicit record fields written in `scores_long.csv`, including:
 
-- `model`
+- `generator_model`
 - `prompt_variant`
 - `question_id`
 - `trigger_type`
 
-Each analysis unit corresponds to a fixed combination of these fields.
-Units are not merged across prompt families, judge versions, or evaluation modes.
+All summary tables also carry `judge_version` to prevent merging across judge runs.
 
 ---
 
-## Aggregation Rules
+## Aggregation products
 
-For each analysis unit:
+Per-file records are flattened into:
 
-- Per-file scores are aggregated into summary statistics
-- Aggregation is performed **only over valid records**
-- No cross-unit normalization, reweighting, or manual adjustment is applied
+- `scores_long.csv` (one row per evaluated file)
 
-All aggregated values remain traceable to underlying per-file evaluation records.
+and aggregated into:
 
----
+- `scores_grouped.csv` (means over valid records per analysis unit)
 
-## Failure Attribution and Taxonomy
+The `total` column is a **derived** value computed as:
 
-Analysis distinguishes between:
+- `total = A_structure + B_snapshot_constraint + C_actionability + D_completeness + E_drift_failure`
 
-- **Scoring outcomes**, defined by rubric-based numeric fields, and
-- **Protocol-level failures** that render records non-auditable.
-
-Protocol-level failures are identified using failure flags defined in:
-
-- `supplement/03_evaluation_rules/failure_taxonomy.md`
-
-Narrative groupings (e.g., schema violations, instruction deviation) are used
-for **descriptive reporting only** and do not redefine failure labels.
+No reweighting or manual adjustment is applied.
 
 ---
 
-## Attribution and Ablation
+## Outputs (paper-cites location)
 
-When attribution is performed, it follows a fixed sequence:
+For each `<judge_version>`, derived outputs are written under:
 
-1. Identify the failure flag(s) present
-2. State a hypothesized mechanism
-3. Define a minimal ablation that alters a single factor
-4. Compare outcomes under identical evaluation settings
+- `/supplement/04_results/03_processed_evaluations/<judge_version>/summary_tables/`
 
-Attribution is recorded only when a minimal ablation produces an observable change.
+This directory may include:
 
----
-
-## Reproducibility Constraints
-
-All analysis steps satisfy the following constraints:
-
-- Each reported value can be recomputed from stored artifacts
-- No manual correction or post-hoc filtering is applied
-- All grouping keys are recorded explicitly in result tables
+- `scores_long.csv`
+- `scores_grouped.csv`
+- `excluded_records.jsonl`
+- `run_meta.json`
 
 ---
 
-## Output Products
+## Traceability
 
-This directory may contain:
+Every row in `scores_long.csv` is traceable to a concrete record JSON under:
 
-- Summary tables grouped by model, prompt variant, or question
-- Failure frequency breakdowns by failure flag
-- Diagnostic logs for invalid or excluded records
+- `/supplement/04_results/03_processed_evaluations/<judge_version>/valid_evaluations/`
 
-All derived outputs stored under this directory remain fully traceable to
-processed evaluation artifacts upstream.
+Each record points back to preserved evidence via its `file` field:
+
+- `/supplement/04_results/01_raw_model_outputs/<record.file>`
+
+---
+
+## Failure taxonomy and attribution
+
+This artifact separates two layers:
+
+- rubric score outcomes (A–E)
+- protocol-level failures that make a record unusable for aggregation
+
+Protocol-level failure flags follow:
+
+- `/supplement/03_evaluation_rules/failure_taxonomy.md`
+
+Narrative labels (e.g., “schema mismatch”, “instruction deviation”) are descriptive only and do not redefine failure flags.
