@@ -13,8 +13,7 @@ This directory contains **offline reproduction and audit utilities**.
 ## Authoritative reproduction entry
 
 ### `reproduce_valid_evaluations.py`
-
-This is the **only authoritative executable entry point** for reproducing reported result tables.
+This is the **primary reproduction entry point** used to regenerate the reported result tables from stored judge JSON artifacts.
 
 **Inputs (read-only):**
 ```
