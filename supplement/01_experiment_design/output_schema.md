@@ -14,8 +14,8 @@ This document specifies the **expected structural layout** of model outputs used
 An output is expected to contain **exactly three** top-level sections, appearing **once each** and in the following order:
 
 1. `fact snapshot`
-2. `chatgpt search instructions`
-3. `gemini deep research instructions`
+2. `ChatGPT web search instructions`
+3. `Gemini deep research instructions`
 
 **Section titles are expected to match the labels above.**
 
@@ -24,8 +24,8 @@ An output is expected to contain **exactly three** top-level sections, appearing
 ### Section Intent
 
 - **fact snapshot**: a short snapshot statement.
-- **chatgpt search instructions**: instructions for web searching and synthesis.
-- **gemini deep research instructions**: instructions for broader literature-style exploration.
+- **ChatGPT web search instructions**: instructions for web searching and synthesis.
+- **Gemini deep research instructions**: instructions for broader literature-style exploration.
 
 > Note: Any constraints beyond this layout (e.g., length limits, content constraints, schema violation handling) are specified and adjudicated only by the evaluation protocol in `supplement/03_evaluation_rules/`.
 
@@ -37,9 +37,9 @@ An output is expected to contain **exactly three** top-level sections, appearing
 ## fact snapshot
 ...
 
-## chatgpt search instructions
+## ChatGPT web search instructions
 ...
 
-## gemini deep research instructions
+## Gemini deep research instructions
 ...
 ```

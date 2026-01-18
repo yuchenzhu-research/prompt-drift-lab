@@ -37,8 +37,8 @@ output_contract:
     evaluation protocol.
   sections:
     - fact snapshot
-    - chatgpt search instructions
-    - gemini deep research instructions
+    - ChatGPT web search instructions
+    - Gemini deep research instructions
 
 evaluation_reference:
   authority: supplement/03_evaluation_rules

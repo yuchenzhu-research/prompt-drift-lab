@@ -56,8 +56,8 @@ These revisions were applied conservatively and are limited to addressing behavi
 
 ## Non-Goals and Exclusions
 
-- No prompt variants were evaluated or selected based on quantitative performance during development.
-- No comparisons between Base A and Base B are reported.
+- No quantitative results are computed or reported during development.
+- No quantitative comparisons between Base A and Base B are computed or reported; Base A is not used in the evaluation stage.
 - No evaluation rules, scoring criteria, or validity definitions are introduced or modified in this file.
 
 ---

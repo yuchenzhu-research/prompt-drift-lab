@@ -1,4 +1,4 @@
-# Threats to Validity and Limitations
+# Threats and Limitations
 
 This document records scope boundaries and limitations of the experimental design. It characterizes factors that may influence interpretation of results without defining or interpreting any evaluation criteria, scoring rules, or validity judgments.
 
@@ -28,7 +28,8 @@ The definition and granularity of reported evaluation signals are determined by 
 
 ### 1.3 Handling Boundaries
 
-Some generated outputs may fall outside the scope of downstream evaluation as defined by the evaluation protocol. This document records the existence of such boundary cases but does not specify criteria or handling procedures.
+Some generated outputs may be deemed non-evaluable under the fixed evaluation protocol.  
+Criteria and handling procedures for such cases are defined exclusively in `supplement/03_evaluation_rules/` and are not duplicated here.
 
 ---
 
@@ -40,7 +41,7 @@ Model outputs may be influenced by system-level factors beyond prompt variation,
 
 ### 2.2 Multi-Factor Prompt Variants
 
-Defined prompt variants (baseline, long, weak, conflict) simultaneously modify multiple prompt attributes such as length, constraint signaling, and conflict degree. Reported comparisons therefore describe associations across conditions rather than isolated causal effects.
+Defined prompt variants (baseline, long, weak, conflict) simultaneously modify multiple prompt attributes such as length, constraint signaling, and conflict degree. Reported comparisons therefore describe associations across conditions rather than isolated causal effects. Accordingly, this study does not attempt single-factor causal attribution within these variants.
 
 ### 2.3 Procedure Effects
 
@@ -56,7 +57,7 @@ The evaluated tasks focus on structured-output and template-following scenarios.
 
 ### 3.2 Model and Time Dependence
 
-Observed behaviors depend on specific model versions and execution windows. Model identifiers and timestamps are recorded, but systematic cross-time consistency testing is outside the scope of this study.
+Observed behaviors depend on specific model versions and execution windows. Model identifiers and execution timestamps are recorded for traceability; systematic cross-time consistency testing is out of scope.
 
 ### 3.3 Language Scope
 
@@ -68,7 +69,7 @@ The evaluation primarily uses Chinese-language questions. Language-specific conv
 
 ### 4.1 Replication Limits
 
-Each experimental condition currently produces a single output. Variance estimation and confidence intervals are therefore not reported, and findings reflect individual realizations rather than distributional properties.
+Each experimental condition currently produces a single output. Variance estimation (e.g., repeated sampling, confidence intervals) is out of scope for this study and is therefore not reported. Findings reflect single realizations rather than distributional properties.
 
 ### 4.2 Multi-Dimensional Reporting
 
