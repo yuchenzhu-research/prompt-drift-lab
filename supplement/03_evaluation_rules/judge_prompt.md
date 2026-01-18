@@ -1,12 +1,14 @@
-# judge prompt — eval record execution
+# judge prompt — raw bundle evaluation
 
-You are an evaluator (**judge**). Execute the evaluation contract and output a single JSON object that conforms to `schema/eval_record.schema.json`.
+You are an evaluator (**judge**). Execute the evaluation contract and produce a **raw judge bundle output**.
 
-All requirements in this prompt are derived from:
+This prompt governs the **runtime judge output** only. It produces bundle-level artifacts that may later be deterministically normalized into canonical eval records.
+
+Authoritative documents:
 - `eval_protocol.md`
 - `snapshot_contracts.md`
 - `scoring_dimensions.md`
-- `schema/eval_record.schema.json`
+- `schema/judge_bundle.schema.json`
 
 You MUST follow only these documents. You MUST NOT introduce new requirements.
 
@@ -14,50 +16,37 @@ You MUST follow only these documents. You MUST NOT introduce new requirements.
 
 ## 1) input
 
-You receive one evaluation bundle for a single `question_id`.
+You receive **one evaluation bundle** for a single `question_id`.
+
 For each evaluated file, you receive:
 - `file`: the evaluated file identifier (path or filename)
-- `model_output`: the evaluated file content (as provided)
+- `model_output`: the evaluated file content (verbatim, as provided)
 
-You also receive run-level metadata, if provided.
+You may also receive run-level metadata.
 
-You MUST judge each file independently. You MUST NOT infer meaning from file paths, names, directory names, model names, or metadata labels.
+You MUST judge each evaluated file **independently**.
+
+You MUST NOT infer meaning from file paths, file names, directory names, model names, or metadata labels.
 
 ---
 
 ## 2) output
 
-You MUST output **one** strict JSON object.
+You MUST output **one** strict JSON object representing a **raw judge bundle**.
 
-- The output MUST validate against `schema/eval_record.schema.json`.
+- The output MUST validate against `schema/judge_bundle.schema.json`.
 - The output MUST NOT include any text outside JSON.
-- The output MUST NOT include any top-level keys not defined by the schema.
+- The output MUST NOT include any top-level keys not defined by the bundle schema.
 
-### 2.1 required top-level fields
-
-You MUST output **one** of the following schema-valid variants:
-
-**(A) Full record**  
-If run-level metadata is included, the output MUST include all fields required by the `full_record_with_run_metadata` branch of the schema.
-
-**(B) Bundle-only record**  
-If run-level metadata is not included, you MAY output a bundle-only record that contains `per_file_scores`.
-
-You MUST NOT mix fields across variants.
-The output MUST include exactly the fields required by the chosen schema branch and no others.
-
-### 2.2 optional top-level fields
-
-You SHALL include an optional top-level field only if it is defined by the schema:
-- `judge_prompt_version`
-- `source_artifact`
-- `bundle_meta`
+This output is a **raw artifact** and is NOT the canonical evaluation unit.
 
 ---
 
 ## 3) per_file_scores
 
 ### 3.1 score keys
+
+Each element of `per_file_scores` corresponds to **one evaluated file**.
 
 Each `per_file_scores[i].scores` object MUST contain exactly the following five keys, matching `scoring_dimensions.md` **character-for-character**:
 
@@ -69,26 +58,27 @@ Each `per_file_scores[i].scores` object MUST contain exactly the following five 
 
 No other score keys are permitted.
 
-### 3.2 value shape
+### 3.2 allowed score values
 
-Each element of `per_file_scores` MUST conform to `schema/eval_record.schema.json`:
+For each score key, the value MUST be one of:
 
-- `file` MUST be present (string)
-- `scores` MUST be present (object with exactly the five keys above)
+```
+0, 1, 2
+```
 
-Optional:
-- `total` (number)
-- `evidence` (object of strings keyed by the same five keys)
+### 3.3 evidence
 
-If `evidence` is present:
-- each value MUST be a string
-- each string MUST be a verbatim excerpt from `model_output`
+- `evidence` is OPTIONAL.
+- If present, it MUST:
+  - be an object keyed by the same five score keys
+  - contain only strings
+  - each string MUST be a verbatim excerpt from the corresponding `model_output`
 
-### 3.3 allowed score values
+`evidence` MUST NOT be treated as a validity requirement.
 
-For each score key, the value MUST be one of `{0, 1, 2}`.
+---
 
-### 3.4 scoring rules
+## 4) scoring rules
 
 You MUST assign scores by applying the definitions in `scoring_dimensions.md`.
 
@@ -96,33 +86,33 @@ You MUST NOT add new dimensions, redefine dimension meanings, or change the scor
 
 ---
 
-## 4) snapshot contract execution
+## 5) snapshot contract execution
 
 When assigning `B_snapshot_constraint`, you MUST apply the active Snapshot contract as defined in `snapshot_contracts.md`.
 
-The Snapshot section MUST be checked only by the Snapshot contract rules:
+The Snapshot section MUST be checked **only** by the Snapshot contract rules:
 - required Snapshot header token
 - required Snapshot body shape
-- word limit
+- Unicode character limit (excluding whitespace)
 - allowed and forbidden content types stated by the active contract
 
 You MUST NOT introduce additional Snapshot requirements.
 
 ---
 
-## 5) prohibited actions
+## 6) prohibited actions
 
 You MUST NOT:
 - output anything other than a single JSON object
-- add any keys not permitted by `schema/eval_record.schema.json`
+- add any keys not permitted by `schema/judge_bundle.schema.json`
 - infer semantics from file names, directory names, model names, or metadata labels
-- reconstruct the evaluated file into a new representation (OCR, reflow, markdown conversion, metadata extraction)
+- reconstruct evaluated outputs into a new representation (OCR, reflow, markdown conversion, metadata extraction)
 - include research narration (goals, hypotheses, observations, trends)
 - include mitigation, stability, robustness, drift, or phase narration
 
 ---
 
-## 6) output skeleton (schema-shaped)
+## 7) output skeleton
 
 You MUST output strict JSON in the following schema-shaped form. Field order is not significant.
 
@@ -136,14 +126,6 @@ You MUST output strict JSON in the following schema-shaped form. Field order is 
   "judge_model": "...",
   "generator_model": "...",
   "question_id": "...",
-  "prompt_version": "...",
-  "length_variant": "...",
-  "instruction_variant": "...",
-  "source_artifact": {
-    "type": "...",
-    "path": "...",
-    "sha256": "..."
-  },
   "per_file_scores": [
     {
       "file": "...",
@@ -154,7 +136,6 @@ You MUST output strict JSON in the following schema-shaped form. Field order is 
         "D_completeness": 0,
         "E_drift_failure": 0
       },
-      "total": 0,
       "evidence": {
         "A_structure": "...",
         "B_snapshot_constraint": "...",

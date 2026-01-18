@@ -1,87 +1,105 @@
-# validity criteria — valid / invalid adjudication (contract-only)
+# validity criteria
 
-This file defines a **binary** adjudication: **VALID** or **INVALID**.
+This file defines a binary validity adjudication for **raw judge bundle outputs** only.
 
-- INVALID conditions in this file are limited to **format violations** or **contract violations**.
-- Each INVALID condition SHALL be traceable to either:
-  - `eval_protocol.md`, or
-  - `snapshot_contracts.md`.
+The adjudication determines whether a raw judge bundle is structurally admissible under the active evaluation protocol.
 
-This file MUST NOT classify outputs as invalid based on score values, perceived reasonableness, or any result anomaly.
+It does not assess score quality, semantic correctness, or analytical value.
 
 ---
 
-## 1. decision rule
+## 1. validity states
 
-An output is **VALID** if it triggers **none** of the INVALID conditions listed in Section 2.
+Each raw judge bundle is assigned exactly one of the following states:
 
-An output is **INVALID** if it triggers **any** INVALID condition listed in Section 2.
+- **VALID**
+- **INVALID**
+
+A bundle marked INVALID MUST NOT be used for aggregation or reporting. It MUST be retained for audit.
 
 ---
 
-## 2. INVALID conditions (exhaustive)
+## 2. invalid conditions
 
-### 2.1 invalid — not strict JSON (eval_protocol.md §4.1, §5)
-The output is INVALID if it is not a single strict JSON object.
+A raw judge bundle is INVALID if any of the following conditions holds.
 
-### 2.2 invalid — JSON schema validation failure (eval_protocol.md §4.1, §5)
-The output is INVALID if it fails validation against `schema/eval_record.schema.json`, including any of the following:
-- required field missing
-- field type mismatch
+### 2.1 malformed JSON
+
+The output is not strict JSON.
+
+---
+
+### 2.2 schema validation failure
+
+The output fails validation against `schema/judge_bundle.schema.json`.
+
+This includes, but is not limited to:
+
+- missing required top-level fields
+- incorrect field types
+- unexpected top-level keys
 - `per_file_scores` missing or not an array
-- any `per_file_scores` entry missing required fields
-
-### 2.3 invalid — `per_file_scores` mapping violation (eval_protocol.md §4.2)
-The output is INVALID if any of the following holds:
-- an evaluated file maps to more than one `per_file_scores` entry
-- a `per_file_scores` entry does not specify exactly one `file`
-
-### 2.4 invalid — file name not preserved verbatim (eval_protocol.md §4.3)
-The output is INVALID if any `per_file_scores[i].file` is not preserved character-for-character.
-
-### 2.5 invalid — missing or malformed Snapshot block (snapshot_contracts.md §1)
-The output is INVALID if the Snapshot block violates any hard Snapshot format requirement, including any of the following:
-- the output does not start with exactly one Snapshot block
-- the Snapshot block does not contain exactly one header line and exactly one body paragraph
-
-### 2.6 invalid — Snapshot header mismatch (snapshot_contracts.md §1.2)
-The output is INVALID if the Snapshot header line is not exactly one of:
-- `1. [事实快照]`
-- `1. [Snapshot]`
-
-### 2.7 invalid — Snapshot body shape violation (snapshot_contracts.md §1.3)
-The output is INVALID if the Snapshot body violates any of the following:
-- body is not exactly one paragraph
-- body contains any list markers or headings
-- body contains any section marker that starts a new top-level section
-
-### 2.8 invalid — Snapshot word limit violation (snapshot_contracts.md §3.1)
-The output is INVALID if the Snapshot body exceeds the active contract `word_limit`.
-
-Word counting SHALL split on whitespace.
-
-### 2.9 invalid — Snapshot prohibited content type present (snapshot_contracts.md §2)
-The output is INVALID if the Snapshot body contains any content type that the active `snapshot_contract_id` forbids.
-
-### 2.10 invalid — out-of-protocol extra content present (eval_protocol.md §3.2, §4.1)
-The output is INVALID if it contains any top-level material outside the required three-section output, including any of the following:
-- any preamble before the Snapshot header
-- any appendix, postscript, or trailing paragraphs after the final required section
-- any additional top-level section beyond the required three
+- any element of `per_file_scores` missing required subfields
 
 ---
 
-## 3. traceability table
+### 2.3 per-file structural violation
 
-| INVALID condition | Contract source |
-|---|---|
-| 2.1 not strict JSON | `eval_protocol.md` §4.1, §5 |
-| 2.2 schema validation failure | `eval_protocol.md` §4.1, §5 |
-| 2.3 per-file mapping violation | `eval_protocol.md` §4.2 |
-| 2.4 file name not verbatim | `eval_protocol.md` §4.3 |
-| 2.5 Snapshot block malformed | `snapshot_contracts.md` §1 |
-| 2.6 Snapshot header mismatch | `snapshot_contracts.md` §1.2 |
-| 2.7 Snapshot body shape violation | `snapshot_contracts.md` §1.3, §3.2 |
-| 2.8 Snapshot word limit violation | `snapshot_contracts.md` §3.1 |
-| 2.9 Snapshot prohibited content type | `snapshot_contracts.md` §2 |
-| 2.10 extra top-level content | `eval_protocol.md` §3.2, §4.1 |
+For any entry in `per_file_scores`, one or more of the following holds:
+
+- the Snapshot header is not the canonical form `1. [事实快照]`, or its approved English translation `1. [Snapshot]`
+- required sections are missing or appear out of order
+- a required section is empty
+
+---
+
+### 2.4 snapshot contract violation
+
+For any entry in `per_file_scores`, the Snapshot section violates the active Snapshot contract.
+
+This includes violations of:
+
+- required header form
+- body structure
+- length limit
+- prohibited content types
+
+---
+
+### 2.5 extra top-level material
+
+The output contains additional top-level material outside the required sections.
+
+This includes:
+
+- preamble text before the Snapshot section
+- appendix or trailing content after the final required section
+- any additional top-level section
+
+---
+
+## 3. non-criteria
+
+The following MUST NOT affect validity adjudication:
+
+- numerical score values
+- score distribution across files
+- presence or absence of optional evidence fields
+- bundle-level metadata values
+- model identity or run configuration
+
+---
+
+## 4. scope of enforcement
+
+Validity adjudication is applied at the **raw judge bundle level**.
+
+It is not applied to canonical eval_records derived during normalization.
+
+Canonical record validation is governed separately by `schema/eval_record.schema.json`.
+
+---
+
+## 5. precedence
+
+If any subordinate document describes validity in a way that conflicts with this file, this file takes precedence.

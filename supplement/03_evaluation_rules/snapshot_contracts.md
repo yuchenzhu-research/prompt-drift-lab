@@ -1,103 +1,116 @@
 # snapshot contracts
 
-This file defines **Snapshot** constraints only. It MUST NOT define scoring rules, validity rules, or any cross-file precedence.
+This file defines Snapshot constraints only. It does not define scoring rules, validity rules, or cross-file precedence.
 
 ---
 
-## 1. snapshot block (hard format)
+## 1. snapshot block
 
-A Snapshot block is the **first block** of the judge output.
+A Snapshot block is the first block of the judged output.
 
-### 1.1 required order and count
-The judge output MUST start with exactly **one** Snapshot block.
+### required structure
 
-The Snapshot block MUST contain exactly:
-1) **one header line**
-2) **one body paragraph**
+The output starts with exactly one Snapshot block.
 
-No additional lines, headings, lists, appendices, or trailing text are allowed inside the Snapshot block.
+The Snapshot block contains:
+- one header line
+- one body paragraph
 
-### 1.2 required header (verifiable)
-The Snapshot header line MUST be exactly **one** of the following:
+No other lines, lists, headings, appendices, or trailing text are permitted inside the Snapshot block.
+
+### required header
+
+The canonical Snapshot header is:
+
 - `1. [事实快照]`
+
+The following header is an approved English translation provided for readability to English-speaking reviewers and is treated as semantically equivalent:
+
 - `1. [Snapshot]`
 
-Anything else MUST be treated as a Snapshot-format violation.
+No other header forms are permitted. Any other header is treated as a Snapshot format violation.
 
-### 1.3 required body shape (verifiable)
-The Snapshot body MUST be:
-- exactly **one paragraph**
-- **plain text only** (no bullet lists, no numbered lists, no sub-headings)
+### required body form
 
-The body MUST NOT contain:
-- extra section markers (e.g., `2.` / `##` / `Appendix`)
-- additional blocks separated by blank lines
+The body is a single paragraph of plain text.
 
----
-
-## 2. content type constraints (by contract_id)
-
-The Snapshot body MUST follow the content-type constraints of the active `contract_id`.
-
-Content types are judged by surface intent, not by correctness:
-- **facts / phenomena**: descriptions of observed outputs, structure, or visible properties
-- **analysis**: explanations, causes, interpretations, or reasoning
-- **recommendations**: advice, next steps, instructions, or suggested actions
-
-### 2.1 SC_50_NOEXT
-- `word_limit`: 50 words (Section 3)
-- Allowed content types: **facts / phenomena** only
-- MUST NOT include: **analysis**, **recommendations**
-
-### 2.2 SC_150_EXT
-- `word_limit`: 150 words (Section 3)
-- Allowed content types: **facts / phenomena**, **analysis**
-- MUST NOT include: **recommendations**
+It must not contain:
+- lists or list markers
+- sub-headings or section markers
+- blank lines
 
 ---
 
-## 3. verifiable constraints
+## 2. content constraints by contract
 
-### 3.1 word limit
-The Snapshot body MUST NOT exceed the contract `word_limit`.
+The Snapshot body follows the content constraints of the active contract.
 
-- Words MUST be counted by splitting on whitespace.
-- Any count above the limit MUST be treated as a Snapshot constraint violation.
+Content is classified by surface intent rather than correctness:
+- facts or phenomena
+- analysis
+- recommendations
 
-### 3.2 prohibited formatting tokens (quick checks)
-The Snapshot block MUST NOT contain any of the following patterns:
-- list markers: `- `, `* `, `1)`, `2)`
-- markdown headings: `#`, `##`, `###`
-- section starters after the Snapshot header: a new line starting with `2.`
+### SC_50_NOEXT
 
-If any pattern appears, it MUST be treated as a Snapshot-format violation.
+- length limit: 50 words
+- allowed content: facts or phenomena
+- disallowed content: analysis, recommendations
 
----
+### SC_150_EXT
 
-## 4. bindings (which contract_id applies)
-
-### 4.1 prompt variants
-- `supplement/02_prompt_variants/00_baseline_prompt_A.txt`   -> `SC_50_NOEXT`
-- `supplement/02_prompt_variants/01_structured_prompt_B.txt` -> `SC_50_NOEXT`
-- `supplement/02_prompt_variants/02_conflict_prompt.txt`     -> `SC_50_NOEXT`
-- `supplement/02_prompt_variants/03_long_prompt.txt`         -> `SC_50_NOEXT`
-- `supplement/02_prompt_variants/04_weak_prompt.txt`         -> `SC_50_NOEXT`
-
-### 4.2 ablation prompts
-- `promptv0` -> `SC_150_EXT`
-- `promptv1` -> `SC_150_EXT`
-- `promptv2` -> `SC_150_EXT`
+- length limit: 150 words
+- allowed content: facts or phenomena, analysis
+- disallowed content: recommendations
 
 ---
 
-## 5. run metadata fields (required)
+## 3. verifiable checks
 
-Each run MUST record:
+### length limit
+
+The Snapshot body must not exceed the contract length limit.
+
+Words are counted by splitting on whitespace. Any excess is a constraint violation.
+
+### prohibited tokens
+
+The Snapshot block must not contain:
+- list markers such as `- `, `* `, `1)`, `2)`
+- markdown headings such as `#`, `##`, `###`
+- a new top-level section starting with `2.`
+
+The presence of any prohibited token is a Snapshot format violation.
+
+---
+
+## 4. contract binding
+
+The active Snapshot contract is determined by the prompt variant used in the run.
+
+### prompt variants
+
+- `02_prompt_variants/00_baseline_prompt_A.txt`   → `SC_50_NOEXT`
+- `02_prompt_variants/01_structured_prompt_B.txt` → `SC_50_NOEXT`
+- `02_prompt_variants/02_conflict_prompt.txt`     → `SC_50_NOEXT`
+- `02_prompt_variants/03_long_prompt.txt`         → `SC_50_NOEXT`
+- `02_prompt_variants/04_weak_prompt.txt`         → `SC_50_NOEXT`
+
+### ablation prompts
+
+- `promptv0` → `SC_150_EXT`
+- `promptv1` → `SC_150_EXT`
+- `promptv2` → `SC_150_EXT`
+
+---
+
+## 5. run metadata
+
+Each run records the following fields:
 - `snapshot_contract_id`
 - `snapshot_word_limit`
 - `snapshot_allow_extension`
 
-Example:
+Example values:
 - `snapshot_contract_id: SC_50_NOEXT`
 - `snapshot_word_limit: 50`
 - `snapshot_allow_extension: false`
