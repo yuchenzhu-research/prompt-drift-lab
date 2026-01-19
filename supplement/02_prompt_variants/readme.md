@@ -24,6 +24,9 @@ They are not executable instructions and must not be interpreted as alternative 
 
 ### 1. Pilot (A — dev-only)
 
+> **Note on naming:** the file name `00_baseline_prompt_A.txt` is retained for historical reasons from early pipeline prototyping.
+> Despite the name, this variant functions as a **pilot / development-only prompt**, not as the experimental baseline.
+
 A minimal instruction that specifies the required three-section output interface.
 This file is used only for early pipeline sanity checks and qualitative reference.
 It is excluded from all quantitative summary tables and quantitative comparisons (see `supplement/02_prompt_variants/prompt_manifest.md`).
