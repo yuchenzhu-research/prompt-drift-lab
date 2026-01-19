@@ -36,9 +36,13 @@ output_contract:
     Any deviation from this contract is handled exclusively by the
     evaluation protocol.
   sections:
-    - fact snapshot
-    - ChatGPT web search instructions
-    - Gemini deep research instructions
+    - "[事实快照]"
+    - "[ChatGPT 联网搜索指令]"
+    - "[Gemini 深度挖掘指令]"
+  notes:
+    - Section titles are specified in Chinese and are authoritative.
+    - Any English descriptions appearing elsewhere are semantic paraphrases
+      provided for reviewer readability only.
 
 evaluation_reference:
   authority: supplement/03_evaluation_rules

@@ -85,8 +85,21 @@ This file does not enumerate failure criteria or scoring logic.
 
 ## Repository Connections
 
-- Prompt variants and perturbations: `supplement/02_prompt_variants/`
-- Evaluation protocol (single authority): `supplement/03_evaluation_rules/`
-- Results and analysis outputs: `supplement/04_results/`
+This directory is part of a strictly layered supplement structure:
 
-Additional methodological checks and controls are treated as addenda and do not alter the held-out evaluation setup or the fixed evaluation protocol.
+- **Prompt variants and perturbations**
+  Defined in `supplement/02_prompt_variants/`, including all generator-side prompt files and variant manifests.
+
+- **Evaluation protocol (single authority)**
+  Defined in `supplement/03_evaluation_rules/`, which exclusively specifies judging rules, scoring scales, validity criteria, and failure definitions.
+
+- **Results and analysis outputs**
+  Stored under `supplement/04_results/`, including raw model outputs, judged records, invalid cases, and aggregated summary tables.
+
+- **Methodological addenda and controls**
+  Documented in `supplement/05_methodological_addenda_and_controls/`, providing auxiliary analyses, robustness notes, and design-level controls that do not alter the fixed evaluation protocol.
+
+- **Tools and utilities**
+  Located in `supplement/tools/`, containing inspection scripts, validation helpers, and maintenance utilities used for artifact management and auditing.
+
+This directory defines experimental setup and execution only and does not override or reinterpret content from any connected component.
