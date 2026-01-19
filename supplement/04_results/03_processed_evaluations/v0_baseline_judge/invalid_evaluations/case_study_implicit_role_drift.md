@@ -25,7 +25,7 @@ These three sections must appear in order and be directly usable for aggregation
 
 The actual output did not contain the required three sections.
 
-Rather than evaluating the provided content, the judge response reframed the task and produced a free-form analysis discussing how the prompt or task could be improved.
+Rather than evaluating the provided content, the judge response reframed the task and produced a free-form analysis that critiques the prompt/task framing and suggests refinements.
 
 The response resembled advisory or diagnostic commentary instead of an evaluation record.
 
@@ -56,7 +56,7 @@ This excerpt illustrates role drift from *evaluator* to *advisor*.
 ## Why this case matters
 
 This failure is not a formatting error in isolation.
-It reflects a **systematic brittleness of LLM-based judges under implicit or weakly specified constraints**.
+It illustrates that LLM-based judges can drift away from an evaluation role under implicit or weakly specified constraints.
 
 Such cases motivate the explicit separation between:
 
@@ -67,8 +67,8 @@ Such cases motivate the explicit separation between:
 
 ## Handling in analysis
 
-- This record is retained in the dataset for transparency.
+- This record is retained in the artifact for transparency.
 - It is excluded from quantitative aggregation.
-- It is counted toward failure statistics under `PROTOCOL_VIOLATION`.
+- It is logged as an invalid record with failure flag `PROTOCOL_VIOLATION` for audit and inspection.
 
-This treatment prevents silent exclusions and preserves auditability.
+This treatment avoids silent exclusions and preserves auditability.

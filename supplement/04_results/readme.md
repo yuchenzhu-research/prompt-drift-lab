@@ -43,7 +43,7 @@ This flow is strictly one-directional. No later stage feeds back into an earlier
 
 - All artifacts under this directory are frozen and versioned.
 - No evaluation rules are defined here (see `/supplement/03_evaluation_rules/`).
-- All reported results in the paper cite files under `03_processed_evaluations/summary_tables/`.
+- All reported results in the paper cite files under `03_processed_evaluations/<judge_version>/summary_tables/`.
 - Reproduction scripts are provided in `/supplement/tools/`, but execution is **not required** to audit the results.
 - Processed evaluation records are regenerated only when input artifacts or validity conditions change; otherwise, previously validated records are preserved.
 

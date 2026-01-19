@@ -86,7 +86,7 @@ Common flag: `INCOMPLETE_COVERAGE`
 - Encoding errors
 - Files that are not valid JSON
 
-Common flag: *(reserved; rarely observed)*
+Common flag: *(reserved; not observed in the current snapshot)*
 
 ---
 
@@ -124,7 +124,7 @@ The cases below are **illustrative summaries** rather than an exhaustive listing
 ## Handling Policy
 
 - Invalid evaluations are **excluded from aggregate scoring** and summary tables.
-- Counts of invalid records are reported separately.
+- Invalid records are stored separately from numeric summary tables.
 - No manual correction or reinterpretation is applied.
 
 ---
@@ -140,5 +140,5 @@ The cases below are **illustrative summaries** rather than an exhaustive listing
 ## Limitations
 
 - This report does not attempt to attribute root causes beyond protocol-level classification.
-- Categories may overlap across cases.
-- The set of invalid records may grow as additional evaluations are run.
+- Categories are not mutually exclusive across cases.
+- This document reflects the state of invalid records **at the time this snapshot was generated**.

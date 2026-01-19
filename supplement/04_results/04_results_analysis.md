@@ -1,4 +1,4 @@
-# supplement/04_results/04_results_analysis
+# 04_results_analysis
 
 This note defines how reported result tables are derived from stored evaluation artifacts.
 
@@ -11,7 +11,7 @@ This note defines how reported result tables are derived from stored evaluation 
 
 Primary aggregation inputs (per-file processed records):
 
-- `/supplement/04_results/03_processed_evaluations/<judge_version>/valid_evaluations/record_*.json`
+- `/supplement/04_results/03_processed_evaluations/<judge_version>/valid_evaluations/**/record_*.json`
 
 Upstream evidence (not recomputed here):
 
@@ -73,7 +73,7 @@ For each `<judge_version>`, derived outputs are written under:
 
 - `/supplement/04_results/03_processed_evaluations/<judge_version>/summary_tables/`
 
-This directory may include:
+This directory includes:
 
 - `scores_long.csv`
 - `scores_grouped.csv`
@@ -88,9 +88,23 @@ Every row in `scores_long.csv` is traceable to a concrete record JSON under:
 
 - `/supplement/04_results/03_processed_evaluations/<judge_version>/valid_evaluations/`
 
-Each record points back to preserved evidence via its `file` field:
+Traceability to the preserved raw PDF is defined as follows:
 
-- `/supplement/04_results/01_raw_model_outputs/<record.file>`
+1) **Primary join keys (canonical)**
+
+- `generator_model`, `question_id`, `prompt_variant`, `trigger_type`
+
+2) **Raw PDF location rule**
+
+- Raw PDFs are stored under `/supplement/04_results/01_raw_model_outputs/<generator_model_dir>/`.
+- File naming follows the generation template: `q{question_id}_{prompt_variant}_{trigger_type}.pdf`.
+
+3) **`record.file` semantics by judge version (artifact snapshot)**
+
+- **v0**: `record.file` is a preserved identifier from the raw judge bundle and is not required to be a repository path.
+- **v1/v2**: `record.file` is stored as a repository-relative PDF pointer under `01_raw_model_outputs/`.
+
+When `record.file` is not a repository-relative path (v0), the raw PDF is located using the primary join keys and the naming template above.
 
 ---
 
