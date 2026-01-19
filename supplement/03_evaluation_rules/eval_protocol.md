@@ -2,9 +2,9 @@
 
 ## 0. authority and precedence
 
-This file  is the **only normative authority** for evaluation rules in `supplement/03_evaluation_rules/`.
+This file is the **only normative authority** for evaluation rules in `supplement/03_evaluation_rules/`.
 
-- If any other document  conflicts with this file, **this file MUST be followed**.
+- If any other document conflicts with this file, **this file MUST be followed**.
 - `schema/judge_bundle.schema.json` defines the **raw judge bundle JSON shape** and applies **only** to runtime judge outputs.
 - `schema/eval_record.schema.json` defines the **canonical eval_record JSON shape** used for validation, aggregation, and reporting.
 - Other documents are **subordinate references**. They MUST NOT introduce parallel definitions or alternative atomic units.
@@ -52,15 +52,15 @@ A **canonical eval_record** is the normalized evaluation unit derived from a raw
 
 ### 3.1 judge input
 For each evaluated file, the judge input MUST be:
-1) the evaluated file content 
-2) the active evaluation rules 
+1) the evaluated file content
+2) the active evaluation rules
 3) the active scoring scale definitions
 
 No other inputs are permitted.
 
 ### 3.2 prohibited behaviors
 The judge MUST NOT:
-- re-parse or reconstruct the PDF into a new representation 
+- re-parse or reconstruct the PDF into a new representation
 - manually reinterpret the task by injecting unstated assumptions
 - infer semantics from file paths, file names, directory names, model names, or bundle composition
 - use external knowledge of repository structure as a scoring shortcut
@@ -78,7 +78,7 @@ Each evaluation run MUST produce **one** raw judge bundle.
 - The raw judge bundle MAY include run-level metadata and bundle-level notes.
 - The raw judge bundle MUST include `per_file_scores` entries, one per evaluated file.
 
-### 4.2 per_file_scores 
+### 4.2 per_file_scores
 `per_file_scores` exists **only** in raw judge bundles.
 
 Rules:
@@ -90,7 +90,7 @@ Rules:
 
 ---
 
-## 5. normalization 
+## 5. normalization
 
 Raw judge bundles MUST be deterministically normalized into canonical eval_records.
 
@@ -102,7 +102,7 @@ Normalization rules:
 
 ---
 
-## 6. validity screening 
+## 6. validity screening
 
 A canonical eval_record is INVALID if any of the following holds:
 - it is not strict JSON
@@ -116,7 +116,7 @@ Invalid canonical records:
 
 ---
 
-## 7. phases 
+## 7. phases
 
 Phases differ only by **judge mode** and **structural constraints**.
 
@@ -166,4 +166,4 @@ The following documents are subordinate references and MUST NOT override this pr
 ## 10. change control
 
 - Any change to this protocol MUST be versioned by commit.
-- Runs MUST record the protocol version identifier used  in metadata.
+- Runs MUST record the protocol version identifier used in metadata.
